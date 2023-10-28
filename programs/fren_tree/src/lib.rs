@@ -1,4 +1,6 @@
 use anchor_lang::prelude::*;
+extern crate chrono;
+use chrono::{DateTime, Utc, TimeZone, LocalResult, Duration};
 
 pub mod states;
 
@@ -40,12 +42,31 @@ pub mod fren_tree {
 
         let user_profile = &mut ctx.accounts.user_profile;
 
-        // let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
-        // let thirty_days_in_seconds: u64 = 30 * 24 * 60 * 60;
+        if user_profile.upgrade == false {
+            return Ok(());
+        }
+        
+        let upgrade_time: DateTime<Utc> = match Utc.timestamp_opt(user_profile.upgrade_time, 0){
+            LocalResult::Single(dt) => dt,
+            _ => {
+                panic!("Invalid timestamp");
+            }
+        };
 
-        // if user_profile.upgrade_time + thirty_days_in_seconds < now{
-        //     user_profile.upgrade = false;
-        // }
+        let current_datetime: DateTime<Utc> = match Utc.timestamp_opt(Clock::get()?.unix_timestamp, 0){
+            LocalResult::Single(dt) => dt,
+            _ => {
+                panic!("Invalid timestamp");
+            }
+        };
+
+        let duration = current_datetime.signed_duration_since(upgrade_time);
+
+        let thirty_days = Duration::days(30);
+
+        if duration >= thirty_days {
+            user_profile.upgrade = false;
+        }
         
         Ok(())
     }

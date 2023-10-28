@@ -8,5 +8,5 @@ pub struct UserProfile {
     pub twitter: String,
     pub role: String,
     pub upgrade: bool,
-    pub upgrade_time: i64
+    pub upgrade_time: i64,
 }

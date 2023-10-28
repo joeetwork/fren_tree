@@ -62,6 +62,22 @@ describe('fren_tree', () => {
       console.log('Your transaction signature', users);
     })
 
+    it('Check Upgrade', async () => {
+
+      await program.methods
+      .checkUpgrade()
+      .accounts({
+          authority: usersWallet.publicKey,
+          userProfile: usersPda,
+          systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([usersWallet])
+      .rpc();
+
+      const users = await program.account.userProfile.fetch(usersPda);
+      console.log('Your transaction signature', users);
+    })
+
     it('Change Role', async () => {
       await program.methods
       .changeRole("new role")
