@@ -108,4 +108,21 @@ describe('fren_tree', () => {
       const users = await program.account.userProfile.fetch(usersPda);
       console.log('Your transaction signature', users);
     })
+
+    it('Add connection', async () => {
+      await program.methods
+      .changeRole("new role")
+      .accounts({
+          authority: usersWallet.publicKey,
+          userProfile: usersPda,
+          systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([usersWallet])
+      .rpc();
+
+      const users = await program.account.userProfile.fetch(usersPda);
+      console.log('Your transaction signature', users);
+    })
+
+
 });
