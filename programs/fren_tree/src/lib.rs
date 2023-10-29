@@ -1,6 +1,4 @@
 use anchor_lang::prelude::*;
-extern crate chrono;
-use chrono::{DateTime, Utc, TimeZone, LocalResult, Duration};
 
 pub mod states;
 
@@ -29,6 +27,12 @@ pub mod fren_tree {
 
         let user_profile = &mut ctx.accounts.user_profile;
 
+        if user_profile.upgrade == true {
+            return Ok(());
+        }
+
+//user needs to send sol over to my wallet before upgrading
+
         user_profile.upgrade = true;
 
         let current_time = Clock::get()?.unix_timestamp;
@@ -45,26 +49,14 @@ pub mod fren_tree {
         if user_profile.upgrade == false {
             return Ok(());
         }
-        
-        let upgrade_time: DateTime<Utc> = match Utc.timestamp_opt(user_profile.upgrade_time, 0){
-            LocalResult::Single(dt) => dt,
-            _ => {
-                panic!("Invalid timestamp");
-            }
-        };
 
-        let current_datetime: DateTime<Utc> = match Utc.timestamp_opt(Clock::get()?.unix_timestamp, 0){
-            LocalResult::Single(dt) => dt,
-            _ => {
-                panic!("Invalid timestamp");
-            }
-        };
+        let current_time = Clock::get()?.unix_timestamp;
 
-        let duration = current_datetime.signed_duration_since(upgrade_time);
+        let time_difference = current_time - current_time;
 
-        let thirty_days = Duration::days(30);
+        let seconds_in_30_days: i64 = 30 * 24 * 60 * 60;
 
-        if duration >= thirty_days {
+        if time_difference >= seconds_in_30_days {
             user_profile.upgrade = false;
         }
         
