@@ -1,6 +1,7 @@
 import * as anchor from '@coral-xyz/anchor';
 import { Program } from '@coral-xyz/anchor';
 import { FrenTree } from '../target/types/fren_tree';
+import { assert } from 'chai';
 
 describe('fren_tree', () => {
     // Configure the client to use the local cluster.
@@ -48,15 +49,30 @@ describe('fren_tree', () => {
 
     it('Upgrade User', async () => {
 
+      const data = new anchor.BN(1000000);
+
+      const testReciever = new anchor.web3.Keypair()
+
       await program.methods
-      .upgradeUser()
+      .upgradeUser(data)
       .accounts({
           authority: usersWallet.publicKey,
           userProfile: usersPda,
           systemProgram: anchor.web3.SystemProgram.programId,
+          to: testReciever.publicKey
       })
       .signers([usersWallet])
       .rpc();
+
+      const newAccountBalance = await program.provider.connection.getBalance(
+        testReciever.publicKey
+      );
+      
+      assert.strictEqual(
+        newAccountBalance,
+        data.toNumber(),
+        "The new account should have the transferred lamports"
+      );
 
       const users = await program.account.userProfile.fetch(usersPda);
       console.log('Your transaction signature', users);
