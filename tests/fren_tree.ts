@@ -23,12 +23,9 @@ describe('fren_tree', () => {
     };
 
     const [usersPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-          new TextEncoder().encode('USER'),
-          usersWallet.publicKey.toBuffer(),
-      ],
-      program.programId
-  );
+        [new TextEncoder().encode('USER'), usersWallet.publicKey.toBuffer()],
+        program.programId
+    );
 
     it('Is initialized!', async () => {
         await airdrop();
@@ -42,87 +39,180 @@ describe('fren_tree', () => {
             })
             .signers([usersWallet])
             .rpc();
-
-        const users = await program.account.userProfile.fetch(usersPda);
-        console.log('Your transaction signature', users);
     });
 
     it('Upgrade User', async () => {
+        const data = new anchor.BN(1000000);
 
-      const data = new anchor.BN(1000000);
+        const testReciever = new anchor.web3.Keypair();
 
-      const testReciever = new anchor.web3.Keypair()
+        await program.methods
+            .upgradeUser(data)
+            .accounts({
+                authority: usersWallet.publicKey,
+                userProfile: usersPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                to: testReciever.publicKey,
+            })
+            .signers([usersWallet])
+            .rpc();
 
-      await program.methods
-      .upgradeUser(data)
-      .accounts({
-          authority: usersWallet.publicKey,
-          userProfile: usersPda,
-          systemProgram: anchor.web3.SystemProgram.programId,
-          to: testReciever.publicKey
-      })
-      .signers([usersWallet])
-      .rpc();
+        const newAccountBalance = await program.provider.connection.getBalance(
+            testReciever.publicKey
+        );
 
-      const newAccountBalance = await program.provider.connection.getBalance(
-        testReciever.publicKey
-      );
-      
-      assert.strictEqual(
-        newAccountBalance,
-        data.toNumber(),
-        "The new account should have the transferred lamports"
-      );
-
-      const users = await program.account.userProfile.fetch(usersPda);
-      console.log('Your transaction signature', users);
-    })
+        assert.strictEqual(
+            newAccountBalance,
+            data.toNumber(),
+            'The new account should have the transferred lamports'
+        );
+    });
 
     it('Check Upgrade', async () => {
-
-      await program.methods
-      .checkUpgrade()
-      .accounts({
-          authority: usersWallet.publicKey,
-          userProfile: usersPda,
-          systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([usersWallet])
-      .rpc();
-
-      const users = await program.account.userProfile.fetch(usersPda);
-      console.log('Your transaction signature', users);
-    })
+        await program.methods
+            .checkUpgrade()
+            .accounts({
+                authority: usersWallet.publicKey,
+                userProfile: usersPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .signers([usersWallet])
+            .rpc();
+    });
 
     it('Change Role', async () => {
-      await program.methods
-      .changeRole("new role")
-      .accounts({
-          authority: usersWallet.publicKey,
-          userProfile: usersPda,
-          systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([usersWallet])
-      .rpc();
-
-      const users = await program.account.userProfile.fetch(usersPda);
-      console.log('Your transaction signature', users);
-    })
+        await program.methods
+            .changeRole('new role')
+            .accounts({
+                authority: usersWallet.publicKey,
+                userProfile: usersPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .signers([usersWallet])
+            .rpc();
+    });
 
     it('Add connection', async () => {
+        const newConnection = anchor.web3.Keypair.generate();
+
+        const user = await program.account.userProfile.fetch(usersPda);
+
+        const [connectionsPda, bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    new TextEncoder().encode('CONNECTION'),
+                    usersWallet.publicKey.toBuffer(),
+                    Buffer.from([user.connections]),
+                ],
+                program.programId
+            );
+
+        await program.methods
+            .addConnection(newConnection.publicKey)
+            .accounts({
+                authority: usersWallet.publicKey,
+                userProfile: usersPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                connectionAccount: connectionsPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+    });
+
+    it('Remove connection', async () => {
+      const newConnection = anchor.web3.Keypair.generate();
+
+      const user = await program.account.userProfile.fetch(usersPda);
+
+      const [connectionsPda, bump] =
+          anchor.web3.PublicKey.findProgramAddressSync(
+              [
+                  new TextEncoder().encode('CONNECTION'),
+                  usersWallet.publicKey.toBuffer(),
+                  Buffer.from([user.connections]),
+              ],
+              program.programId
+          );
+
       await program.methods
-      .changeRole("new role")
-      .accounts({
-          authority: usersWallet.publicKey,
-          userProfile: usersPda,
-          systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .signers([usersWallet])
-      .rpc();
+          .removeConnection(0)
+          .accounts({
+              authority: usersWallet.publicKey,
+              userProfile: usersPda,
+              systemProgram: anchor.web3.SystemProgram.programId,
+              connectionAccount: connectionsPda,
+          })
+          .signers([usersWallet])
+          .rpc();
 
-      const users = await program.account.userProfile.fetch(usersPda);
-      console.log('Your transaction signature', users);
-    })
+      const connections = await program.account.connectionAccount.fetch(
+          connectionsPda
+      );
+      console.log('Your transaction signature', connections);
+  });
 
+    it('Init top connections', async () => {
+        const [topConnectionsPda, bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    new TextEncoder().encode('TOP'),
+                    usersWallet.publicKey.toBuffer(),
+                ],
+                program.programId
+            );
 
+        await program.methods
+            .initializeTopConnections()
+            .accounts({
+                authority: usersWallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                topConnectionsAccount: topConnectionsPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+    });
+
+    it('Add top connection', async () => {
+        const [topConnectionsPda, bump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    new TextEncoder().encode('TOP'),
+                    usersWallet.publicKey.toBuffer(),
+                ],
+                program.programId
+            );
+
+        await program.methods
+            .addTopConnections(0, 0, 'Degen')
+            .accounts({
+                userProfile: usersPda,
+                authority: usersWallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                topConnectionsAccount: topConnectionsPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+    });
+
+    it('Remove top connection', async () => {
+      const [topConnectionsPda, bump] =
+          anchor.web3.PublicKey.findProgramAddressSync(
+              [
+                  new TextEncoder().encode('TOP'),
+                  usersWallet.publicKey.toBuffer(),
+              ],
+              program.programId
+          );
+
+      await program.methods
+          .removeTopConnections(0, 'Degen')
+          .accounts({
+              userProfile: usersPda,
+              authority: usersWallet.publicKey,
+              systemProgram: anchor.web3.SystemProgram.programId,
+              topConnectionsAccount: topConnectionsPda,
+          })
+          .signers([usersWallet])
+          .rpc();
+  });
 });

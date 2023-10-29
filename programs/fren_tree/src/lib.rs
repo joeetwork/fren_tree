@@ -41,6 +41,16 @@ pub mod fren_tree {
         Ok(())
     }
 
+    pub fn remove_connection(ctx: Context<RemoveConnection>, connection_id: u8) -> Result<()> {
+
+        let user_profile = &mut ctx.accounts.user_profile;
+       
+        user_profile.connections = user_profile.connections.checked_sub(1)
+        .unwrap();
+        
+        Ok(())
+    }
+
     pub fn initialize_top_connections(ctx: Context<InitializeTopConnections>) -> Result<()> {
         let top_connections_account = &mut ctx.accounts.top_connections_account;
 
@@ -61,7 +71,7 @@ pub mod fren_tree {
 
         let user_profile = &mut ctx.accounts.user_profile;
 
-        if user_profile.connections <= _position{
+        if user_profile.connections < _position || user_profile.connections < _connection as u8{
             return Ok(())
         }
 
@@ -96,7 +106,7 @@ pub mod fren_tree {
 
         let user_profile = &mut ctx.accounts.user_profile;
 
-        if user_profile.connections <= _position {
+        if user_profile.connections < _position {
             return Ok(())
         }
 
@@ -224,6 +234,32 @@ pub struct AddConnection<'info> {
         bump,
         payer = authority,
         space = std::mem::size_of::<ConnectionAccount>() + 8,
+    )]
+    pub connection_account: Box<Account<'info, ConnectionAccount>>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(connection_id: u8)]
+pub struct RemoveConnection<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [USER, authority.key().as_ref()],
+        bump,
+        has_one = authority,
+    )]
+    pub user_profile: Box<Account<'info, UserProfile>>,
+
+    #[account(
+        mut,
+        close = authority,
+        seeds = [CONNECTION, authority.key().as_ref(), &[connection_id].as_ref()],
+        bump,
+        has_one = authority,
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
 
