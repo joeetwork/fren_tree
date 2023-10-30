@@ -257,7 +257,7 @@ pub struct RemoveConnection<'info> {
     #[account(
         mut,
         close = authority,
-        seeds = [CONNECTION, authority.key().as_ref(), &[connection_id].as_ref()],
+        seeds = [CONNECTION, authority.key().as_ref(), &[connection_id].as_ref(), ],
         bump,
         has_one = authority,
     )]

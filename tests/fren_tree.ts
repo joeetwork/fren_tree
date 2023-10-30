@@ -129,7 +129,7 @@ describe('fren_tree', () => {
               [
                   new TextEncoder().encode('CONNECTION'),
                   usersWallet.publicKey.toBuffer(),
-                  Buffer.from([user.connections]),
+                  Buffer.from([0]),
               ],
               program.programId
           );
