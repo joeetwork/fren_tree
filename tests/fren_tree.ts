@@ -27,6 +27,16 @@ describe('fren_tree', () => {
         program.programId
     );
 
+    const [connectionsPda, connectonBump] =
+            anchor.web3.PublicKey.findProgramAddressSync(
+                [
+                    new TextEncoder().encode('CONNECTION'),
+                    usersWallet.publicKey.toBuffer(),
+                    Buffer.from([0]),
+                ],
+                program.programId
+            );
+
     it('Is initialized!', async () => {
         await airdrop();
 
@@ -95,18 +105,6 @@ describe('fren_tree', () => {
     it('Add connection', async () => {
         const newConnection = anchor.web3.Keypair.generate();
 
-        const user = await program.account.userProfile.fetch(usersPda);
-
-        const [connectionsPda, bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    new TextEncoder().encode('CONNECTION'),
-                    usersWallet.publicKey.toBuffer(),
-                    Buffer.from([user.connections]),
-                ],
-                program.programId
-            );
-
         await program.methods
             .addConnection(newConnection.publicKey)
             .accounts({
@@ -117,22 +115,14 @@ describe('fren_tree', () => {
             })
             .signers([usersWallet])
             .rpc();
+
+            const connections = await program.account.connectionAccount.fetch(
+              connectionsPda
+          );
+          console.log('Your transaction signature', connections);
     });
 
     it('Remove connection', async () => {
-      const newConnection = anchor.web3.Keypair.generate();
-
-      const user = await program.account.userProfile.fetch(usersPda);
-
-      const [connectionsPda, bump] =
-          anchor.web3.PublicKey.findProgramAddressSync(
-              [
-                  new TextEncoder().encode('CONNECTION'),
-                  usersWallet.publicKey.toBuffer(),
-                  Buffer.from([0]),
-              ],
-              program.programId
-          );
 
       await program.methods
           .removeConnection(0)
@@ -192,6 +182,7 @@ describe('fren_tree', () => {
             })
             .signers([usersWallet])
             .rpc();
+           
     });
 
     it('Remove top connection', async () => {
