@@ -9,7 +9,8 @@ pub struct UserProfile {
     pub role: String,
     pub upgrade: bool,
     pub upgrade_time: i64,
-    pub connections: u8
+    pub connections: u8,
+    pub requests: u8
 }
 
 #[account]
@@ -24,6 +25,13 @@ pub struct UniqueUsername {
 pub struct ConnectionAccount {
     pub authority: Pubkey,
     pub connection: Pubkey
+}
+
+#[account]
+#[derive(Default)]
+pub struct RequestAccount {
+    pub authority: Pubkey,
+    pub request: Pubkey
 }
 
 #[account]

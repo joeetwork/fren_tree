@@ -170,6 +170,65 @@ describe('fren_tree', () => {
         console.log('Your transaction signature', connections);
     });
 
+    it('Connection Requests', async () => {
+        const newConnection = anchor.web3.Keypair.generate();
+        const users = await program.account.userProfile.fetch(usersPda);
+
+        const [requestPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('REQUEST'),
+                usersWallet.publicKey.toBuffer(),
+                Buffer.from([users.requests]),
+            ],
+            program.programId
+        );
+
+        await program.methods
+            .connectionRequests(newConnection.publicKey)
+            .accounts({
+                authority: usersWallet.publicKey,
+                userProfile: usersPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                requestAccount: requestPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+
+        const connections = await program.account.requestAccount.fetch(
+            requestPda
+        );
+        console.log('Your transaction signature', requestPda);
+    });
+
+    it('Remove Request', async () => {
+        const newConnection = anchor.web3.Keypair.generate();
+
+        const [requestPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('REQUEST'),
+                usersWallet.publicKey.toBuffer(),
+                Buffer.from([0]),
+            ],
+            program.programId
+        );
+
+        await program.methods
+            .removeRequests(0)
+            .accounts({
+                authority: usersWallet.publicKey,
+                userProfile: usersPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                requestAccount: requestPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+
+        const connections = await program.account.requestAccount.fetch(
+            requestPda
+        );
+        console.log('Your transaction signature', connections);
+    });
+
     it('Init top connections', async () => {
         const [topConnectionsPda, bump] =
             anchor.web3.PublicKey.findProgramAddressSync(

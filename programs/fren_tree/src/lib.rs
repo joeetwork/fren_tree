@@ -63,6 +63,32 @@ pub mod fren_tree {
         Ok(())
     }
 
+    pub fn connection_requests(ctx: Context<ConnectionRequest>, _request: Pubkey) -> Result<()> {
+
+        let user_profile = &mut ctx.accounts.user_profile;
+
+        let request_account = &mut ctx.accounts.request_account;
+
+        request_account.authority = ctx.accounts.authority.key();
+
+        request_account.request = _request;
+       
+        user_profile.requests = user_profile.requests.checked_add(1)
+        .unwrap();
+        
+        Ok(())
+    }
+
+    pub fn remove_requests(ctx: Context<ConnectionRequest>, request_id: u8) -> Result<()> {
+
+        let user_profile = &mut ctx.accounts.user_profile;
+       
+        user_profile.requests = user_profile.requests.checked_sub(1)
+        .unwrap();
+        
+        Ok(())
+    }
+
     pub fn initialize_top_connections(ctx: Context<InitializeTopConnections>) -> Result<()> {
         let top_connections_account = &mut ctx.accounts.top_connections_account;
 
@@ -301,6 +327,58 @@ pub struct RemoveConnection<'info> {
         has_one = authority,
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction()]
+pub struct ConnectionRequest<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [USER, authority.key().as_ref()],
+        bump,
+        has_one = authority,
+    )]
+    pub user_profile: Box<Account<'info, UserProfile>>,
+
+    #[account(
+        init,
+        seeds = [REQUEST, authority.key().as_ref(), &[user_profile.requests].as_ref(), ],
+        bump,
+        payer = authority,
+        space = std::mem::size_of::<RequestAccount>() + 8,
+    )]
+    pub request_account: Box<Account<'info, RequestAccount>>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(request_id: u8)]
+pub struct RemoveRequest<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [USER, authority.key().as_ref()],
+        bump,
+        has_one = authority,
+    )]
+    pub user_profile: Box<Account<'info, UserProfile>>,
+
+    #[account(
+        mut,
+        close = authority,
+        seeds = [REQUEST, authority.key().as_ref(), &[request_id].as_ref(), ],
+        bump,
+        has_one = authority
+    )]
+    pub request_account: Box<Account<'info, RequestAccount>>,
 
     pub system_program: Program<'info, System>,
 }
