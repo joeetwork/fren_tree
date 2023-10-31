@@ -4,6 +4,9 @@ use anchor_lang::prelude::*;
 pub const USER: &[u8] = b"USER";
 
 #[constant]
+pub const USERNAME: &[u8] = b"USERNAME";
+
+#[constant]
 pub const CONNECTION: &[u8] = b"CONNECTION";
 
 #[constant]

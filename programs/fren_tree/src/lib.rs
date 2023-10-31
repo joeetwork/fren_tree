@@ -11,17 +11,29 @@ pub mod fren_tree {
 
     use super::*;
 
-    pub fn initialize_user(ctx: Context<InitializeUser>, _name: String, _twitter: String, _role: String) -> Result<()> {
+    pub fn initialize_user(ctx: Context<InitializeUser>, _twitter: String, _role: String) -> Result<()> {
 
         let user_profile = &mut ctx.accounts.user_profile;
 
         user_profile.authority = ctx.accounts.authority.key();
-        user_profile.name = _name;
         user_profile.twitter = _twitter;
         user_profile.role = _role;
         user_profile.upgrade = false;
         user_profile.connections = 0;
-        
+
+        Ok(())
+    }
+
+    pub fn add_username(ctx: Context<AddUniqueName>, username: String) -> Result<()> {
+        let user_profile = &mut ctx.accounts.user_profile;
+        let unique_username = &mut ctx.accounts.unique_username;
+
+        unique_username.authority = ctx.accounts.authority.key();
+
+        unique_username.username = username.clone();
+
+        user_profile.username = username.clone();
+
         Ok(())
     }
 
@@ -213,6 +225,33 @@ pub struct InitializeUser<'info> {
 
     pub system_program: Program<'info, System>,
 }
+
+#[derive(Accounts)]
+#[instruction(username: String)]
+pub struct AddUniqueName<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [USER, authority.key().as_ref()],
+        bump,
+        has_one = authority,
+    )]
+    pub user_profile: Box<Account<'info, UserProfile>>,
+
+    #[account(
+        init,
+        seeds = [USERNAME, username.as_bytes()],
+        bump,
+        payer = authority,
+        space = 8 + std::mem::size_of::<UniqueUsername>(),
+    )]
+    pub unique_username: Box<Account<'info, UniqueUsername>>,
+
+    pub system_program: Program<'info, System>,
+}
+
 
 #[derive(Accounts)]
 #[instruction()]

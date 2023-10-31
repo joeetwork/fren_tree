@@ -4,12 +4,19 @@ use anchor_lang::prelude::*;
 #[derive(Default)]
 pub struct UserProfile {
     pub authority: Pubkey,
-    pub name: String,
+    pub username: String,
     pub twitter: String,
     pub role: String,
     pub upgrade: bool,
     pub upgrade_time: i64,
     pub connections: u8
+}
+
+#[account]
+#[derive(Default)]
+pub struct UniqueUsername {
+    pub authority: Pubkey,
+    pub username: String,
 }
 
 #[account]
