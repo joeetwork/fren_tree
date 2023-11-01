@@ -11,6 +11,8 @@ describe('fren_tree', () => {
 
     const usersWallet = anchor.web3.Keypair.generate();
 
+    const receiverWallet = anchor.web3.Keypair.generate();
+
     const connection = anchor.getProvider().connection;
 
     const airdrop = async () => {
@@ -37,6 +39,24 @@ describe('fren_tree', () => {
             program.programId
         );
 
+        const [requestCountPda, requestBump] =
+        anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('REQUESTCOUNT'),
+                receiverWallet.publicKey.toBuffer(),
+            ],
+            program.programId
+        );
+
+        const [requestPda, bump2] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('REQUEST'),
+                receiverWallet.publicKey.toBuffer(),
+                Buffer.from([0]),
+            ],
+            program.programId
+        );
+
     it('Is initialized!', async () => {
         await airdrop();
 
@@ -49,9 +69,6 @@ describe('fren_tree', () => {
             })
             .signers([usersWallet])
             .rpc();
-
-        const connections = await program.account.userProfile.fetch(usersPda);
-        console.log('Your transaction signature', connections);
     });
 
     it('Add Username', async () => {
@@ -76,9 +93,6 @@ describe('fren_tree', () => {
             })
             .signers([usersWallet])
             .rpc();
-
-        const connections = await program.account.userProfile.fetch(usersPda);
-        console.log('Your transaction signature', connections);
     });
 
     it('Upgrade User', async () => {
@@ -145,11 +159,6 @@ describe('fren_tree', () => {
             })
             .signers([usersWallet])
             .rpc();
-
-        const connections = await program.account.connectionAccount.fetch(
-            connectionsPda
-        );
-        console.log('Your transaction signature', connections);
     });
 
     it('Remove connection', async () => {
@@ -163,70 +172,6 @@ describe('fren_tree', () => {
             })
             .signers([usersWallet])
             .rpc();
-
-        const connections = await program.account.connectionAccount.fetch(
-            connectionsPda
-        );
-        console.log('Your transaction signature', connections);
-    });
-
-    it('Connection Requests', async () => {
-        const newConnection = anchor.web3.Keypair.generate();
-        const users = await program.account.userProfile.fetch(usersPda);
-
-        const [requestPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                new TextEncoder().encode('REQUEST'),
-                usersWallet.publicKey.toBuffer(),
-                Buffer.from([users.requests]),
-            ],
-            program.programId
-        );
-
-        await program.methods
-            .connectionRequests(newConnection.publicKey)
-            .accounts({
-                authority: usersWallet.publicKey,
-                userProfile: usersPda,
-                systemProgram: anchor.web3.SystemProgram.programId,
-                requestAccount: requestPda,
-            })
-            .signers([usersWallet])
-            .rpc();
-
-        const connections = await program.account.requestAccount.fetch(
-            requestPda
-        );
-        console.log('Your transaction signature', requestPda);
-    });
-
-    it('Remove Request', async () => {
-        const newConnection = anchor.web3.Keypair.generate();
-
-        const [requestPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                new TextEncoder().encode('REQUEST'),
-                usersWallet.publicKey.toBuffer(),
-                Buffer.from([0]),
-            ],
-            program.programId
-        );
-
-        await program.methods
-            .removeRequests(0)
-            .accounts({
-                authority: usersWallet.publicKey,
-                userProfile: usersPda,
-                systemProgram: anchor.web3.SystemProgram.programId,
-                requestAccount: requestPda,
-            })
-            .signers([usersWallet])
-            .rpc();
-
-        const connections = await program.account.requestAccount.fetch(
-            requestPda
-        );
-        console.log('Your transaction signature', connections);
     });
 
     it('Init top connections', async () => {
@@ -289,6 +234,58 @@ describe('fren_tree', () => {
                 authority: usersWallet.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 topConnectionsAccount: topConnectionsPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+    });
+
+    it('Init request count', async () => {
+
+        const signature = await connection.requestAirdrop(
+            receiverWallet.publicKey,
+            anchor.web3.LAMPORTS_PER_SOL
+        );
+
+        await connection.confirmTransaction(signature);
+
+        await program.methods
+            .requestCountInit(receiverWallet.publicKey)
+            .accounts({
+                authority: usersWallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                requestCount: requestCountPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+    });
+
+    it('Connection Requests', async () => {
+
+        await program.methods
+            .connectionRequests(receiverWallet.publicKey)
+            .accounts({
+                authority: usersWallet.publicKey,
+                requestCount: requestCountPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                requestAccount: requestPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+
+            console.log(requestPda);
+            
+    });
+
+    it('Remove Request', async () => {
+        console.log(requestPda);
+
+        await program.methods
+            .removeRequests(0, receiverWallet.publicKey)
+            .accounts({
+                authority: usersWallet.publicKey,
+                requestCount: requestCountPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                requestAccount: requestPda,
             })
             .signers([usersWallet])
             .rpc();
