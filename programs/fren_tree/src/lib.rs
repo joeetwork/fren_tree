@@ -63,43 +63,6 @@ pub mod fren_tree {
         Ok(())
     }
 
-    pub fn request_count_init(ctx: Context<RequestCountInit>, request: Pubkey) -> Result<()> {
-
-        let request_count = &mut ctx.accounts.request_count;
-
-        request_count.authority = request;
-
-        request_count.count = 0;
-        
-        Ok(())
-    }
-
-    pub fn connection_requests(ctx: Context<ConnectionRequest>, request: Pubkey) -> Result<()> {
-
-        let request_count = &mut ctx.accounts.request_count;
-
-        let request_account = &mut ctx.accounts.request_account;
-
-        request_account.authority = request;
-
-        request_account.request = ctx.accounts.authority.key();
-       
-        request_count.count = request_count.count.checked_add(1)
-        .unwrap();
-        
-        Ok(())
-    }
-
-    pub fn remove_requests(ctx: Context<RemoveRequest>, request_id: u8, request: Pubkey) -> Result<()> {
-
-        let request_count = &mut ctx.accounts.request_count;
-       
-        request_count.count = request_count.count.checked_sub(1)
-        .unwrap();
-        
-        Ok(())
-    }
-
     pub fn initialize_top_connections(ctx: Context<InitializeTopConnections>) -> Result<()> {
         let top_connections_account = &mut ctx.accounts.top_connections_account;
 
@@ -338,73 +301,6 @@ pub struct RemoveConnection<'info> {
         has_one = authority,
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
-
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(receiver: Pubkey)]
-pub struct RequestCountInit<'info> {
-    #[account(mut)]
-    pub authority: Signer<'info>,
-
-    #[account(
-        init,
-        seeds = [REQUESTCOUNT, receiver.as_ref()],
-        bump,
-        payer = authority,
-        space = std::mem::size_of::<RequestCount>() + 8,
-    )]
-    pub request_count: Box<Account<'info, RequestCount>>,
-
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(receiver: Pubkey)]
-pub struct ConnectionRequest<'info> {
-    #[account(mut)]
-    pub authority: Signer<'info>,
-
-    #[account(
-        mut,
-        seeds = [REQUESTCOUNT, receiver.as_ref()],
-        bump,
-    )]
-    pub request_count: Box<Account<'info, RequestCount>>,
-
-    #[account(
-        init,
-        seeds = [REQUEST, request_count.authority.as_ref(), &[request_count.count].as_ref(), ],
-        bump,
-        payer = authority,
-        space = std::mem::size_of::<RequestAccount>() + 8,
-    )]
-    pub request_account: Box<Account<'info, RequestAccount>>,
-
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(request_id: u8, receiver: Pubkey)]
-pub struct RemoveRequest<'info> {
-    #[account(mut)]
-    pub authority: Signer<'info>,
-
-    #[account(
-        mut,
-        seeds = [REQUESTCOUNT, receiver.as_ref()],
-        bump,
-    )]
-    pub request_count: Box<Account<'info, RequestCount>>,
-
-    #[account(
-        mut,
-        close = authority,
-        seeds = [REQUEST, request_count.authority.as_ref(), &[request_id].as_ref(), ],
-        bump,
-    )]
-    pub request_account: Box<Account<'info, RequestAccount>>,
 
     pub system_program: Program<'info, System>,
 }

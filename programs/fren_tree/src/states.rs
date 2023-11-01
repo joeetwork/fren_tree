@@ -29,20 +29,6 @@ pub struct ConnectionAccount {
 
 #[account]
 #[derive(Default)]
-pub struct RequestAccount {
-    pub authority: Pubkey,
-    pub request: Pubkey
-}
-
-#[account]
-#[derive(Default)]
-pub struct RequestCount {
-    pub authority: Pubkey,
-    pub count: u8
-}
-
-#[account]
-#[derive(Default)]
 pub struct TopConnectionsAccount {
     pub authority: Pubkey,
     pub devs: Vec<i32>,
