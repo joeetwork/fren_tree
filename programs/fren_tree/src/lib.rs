@@ -51,6 +51,8 @@ pub mod fren_tree {
 
         user_profile.connections = user_profile.connections.checked_add(1)
         .unwrap();
+
+    //need to add a way for the receiver account to find the created request
         
         Ok(())
     }
@@ -65,12 +67,14 @@ pub mod fren_tree {
 
         connection_account.authority = receiver;
 
+        connection_account.connection.push(ctx.accounts.authority.key());
+
         connection_account.accepted = true;
 
         //setting up the new account
         new_connection_account.authority = ctx.accounts.authority.key();
 
-        new_connection_account.connection = vec![receiver];
+        new_connection_account.connection = vec![receiver, ctx.accounts.authority.key()];
 
         new_connection_account.accepted = true;
        
@@ -293,7 +297,7 @@ pub struct SendRequest<'info> {
 
     #[account(
         init,
-        seeds = [CONNECTION, receiver.as_ref()],
+        seeds = [CONNECTION, authority.key().as_ref()],
         bump,
         payer = authority,
         space = std::mem::size_of::<ConnectionAccount>() + 8,
@@ -319,19 +323,20 @@ pub struct AcceptRequest<'info> {
 
     #[account(
         mut,
-        seeds = [CONNECTION, authority.key().as_ref()],
-        bump,
-        has_one = authority
-    )]
-    pub new_connection_account: Box<Account<'info, ConnectionAccount>>,
-
-    #[account(
-        mut,
         seeds = [CONNECTION, receiver.as_ref()],
         bump,
         has_one = authority
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
+
+    #[account(
+        init,
+        seeds = [CONNECTION, authority.key().as_ref()],
+        bump,
+        payer = authority,
+        space = std::mem::size_of::<ConnectionAccount>() + 8,
+    )]
+    pub new_connection_account: Box<Account<'info, ConnectionAccount>>,
 
     pub system_program: Program<'info, System>,
 }
