@@ -22,20 +22,19 @@ describe('fren_tree', () => {
         await connection.confirmTransaction(signature);
     };
 
-    const [usersPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+    const [usersPda] = anchor.web3.PublicKey.findProgramAddressSync(
         [new TextEncoder().encode('USER'), usersWallet.publicKey.toBuffer()],
         program.programId
     );
 
-    const [connectionsPda, connectonBump] =
-        anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                new TextEncoder().encode('CONNECTION'),
-                usersWallet.publicKey.toBuffer(),
-                Buffer.from([0]),
-            ],
-            program.programId
-        );
+    const [connectionsPda] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            new TextEncoder().encode('CONNECTION'),
+            usersWallet.publicKey.toBuffer(),
+            Buffer.from([0]),
+        ],
+        program.programId
+    );
 
     it('Is initialized!', async () => {
         await airdrop();

@@ -11,13 +11,13 @@ pub mod fren_tree {
 
     use super::*;
 
-    pub fn initialize_user(ctx: Context<InitializeUser>, _twitter: String, _role: String) -> Result<()> {
+    pub fn initialize_user(ctx: Context<InitializeUser>, twitter: String, role: String) -> Result<()> {
 
         let user_profile = &mut ctx.accounts.user_profile;
 
         user_profile.authority = ctx.accounts.authority.key();
-        user_profile.twitter = _twitter;
-        user_profile.role = _role;
+        user_profile.twitter = twitter;
+        user_profile.role = role;
         user_profile.upgrade = false;
         user_profile.connections = 0;
 
@@ -37,31 +37,55 @@ pub mod fren_tree {
         Ok(())
     }
 
-    pub fn add_connection(ctx: Context<AddConnection>, _connection: Pubkey) -> Result<()> {
+    pub fn send_request(ctx: Context<SendRequest>, receiver: Pubkey) -> Result<()> {
 
         let user_profile = &mut ctx.accounts.user_profile;
 
         let connection_account = &mut ctx.accounts.connection_account;
 
-        connection_account.authority = ctx.accounts.authority.key();
+        connection_account.authority = receiver;
 
-        connection_account.connection = _connection;
-       
+        connection_account.connection = vec![ctx.accounts.authority.key()];
+
+        connection_account.accepted = false;
+
         user_profile.connections = user_profile.connections.checked_add(1)
         .unwrap();
         
         Ok(())
     }
 
-    pub fn remove_connection(ctx: Context<RemoveConnection>, connection_id: u8) -> Result<()> {
-
-        let user_profile = &mut ctx.accounts.user_profile;
-       
-        user_profile.connections = user_profile.connections.checked_sub(1)
-        .unwrap();
+    pub fn accept_request(ctx: Context<AcceptRequest>, receiver: Pubkey) -> Result<()> {
         
+        let user_profile = &mut ctx.accounts.user_profile;
+
+        let connection_account = &mut ctx.accounts.connection_account;
+
+        let new_connection_account = &mut ctx.accounts.new_connection_account;
+
+        connection_account.authority = receiver;
+
+        connection_account.accepted = true;
+
+        //setting up the new account
+        new_connection_account.authority = ctx.accounts.authority.key();
+
+        new_connection_account.connection = vec![receiver];
+
+        new_connection_account.accepted = true;
+       
+        user_profile.connections = user_profile.connections.checked_add(1)
+        .unwrap();
+
         Ok(())
     }
+
+    // pub fn remove_connection(ctx: Context<RemoveConnection>, connection_id: u8) -> Result<()> {
+
+ 
+        
+    //     Ok(())
+    // }
 
     pub fn initialize_top_connections(ctx: Context<InitializeTopConnections>) -> Result<()> {
         let top_connections_account = &mut ctx.accounts.top_connections_account;
@@ -254,8 +278,8 @@ pub struct AddUniqueName<'info> {
 
 
 #[derive(Accounts)]
-#[instruction()]
-pub struct AddConnection<'info> {
+#[instruction(receiver: Pubkey)]
+pub struct SendRequest<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
@@ -269,7 +293,7 @@ pub struct AddConnection<'info> {
 
     #[account(
         init,
-        seeds = [CONNECTION, authority.key().as_ref(), &[user_profile.connections].as_ref(), ],
+        seeds = [CONNECTION, receiver.as_ref()],
         bump,
         payer = authority,
         space = std::mem::size_of::<ConnectionAccount>() + 8,
@@ -280,8 +304,8 @@ pub struct AddConnection<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(connection_id: u8)]
-pub struct RemoveConnection<'info> {
+#[instruction(receiver: Pubkey)]
+pub struct AcceptRequest<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
@@ -295,10 +319,17 @@ pub struct RemoveConnection<'info> {
 
     #[account(
         mut,
-        close = authority,
-        seeds = [CONNECTION, authority.key().as_ref(), &[connection_id].as_ref()],
+        seeds = [CONNECTION, authority.key().as_ref()],
         bump,
-        has_one = authority,
+        has_one = authority
+    )]
+    pub new_connection_account: Box<Account<'info, ConnectionAccount>>,
+
+    #[account(
+        mut,
+        seeds = [CONNECTION, receiver.as_ref()],
+        bump,
+        has_one = authority
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
 

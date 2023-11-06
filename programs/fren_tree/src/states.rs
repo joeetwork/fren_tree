@@ -24,7 +24,8 @@ pub struct UniqueUsername {
 #[derive(Default)]
 pub struct ConnectionAccount {
     pub authority: Pubkey,
-    pub connection: Pubkey
+    pub connection: Vec<Pubkey>,
+    pub accepted: bool
 }
 
 #[account]
