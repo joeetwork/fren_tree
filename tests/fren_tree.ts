@@ -27,11 +27,10 @@ describe('fren_tree', () => {
         program.programId
     );
 
-    const [connectionsPda] = anchor.web3.PublicKey.findProgramAddressSync(
+    const [requestCountsPda] = anchor.web3.PublicKey.findProgramAddressSync(
         [
-            new TextEncoder().encode('CONNECTION'),
+            new TextEncoder().encode('REQUESTCOUNT'),
             usersWallet.publicKey.toBuffer(),
-            Buffer.from([0]),
         ],
         program.programId
     );
@@ -44,6 +43,7 @@ describe('fren_tree', () => {
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
+                requestCount: requestCountsPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([usersWallet])
@@ -120,34 +120,6 @@ describe('fren_tree', () => {
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
-            })
-            .signers([usersWallet])
-            .rpc();
-    });
-
-    it('Add connection', async () => {
-        const newConnection = anchor.web3.Keypair.generate();
-
-        await program.methods
-            .addConnection(newConnection.publicKey)
-            .accounts({
-                authority: usersWallet.publicKey,
-                userProfile: usersPda,
-                systemProgram: anchor.web3.SystemProgram.programId,
-                connectionAccount: connectionsPda,
-            })
-            .signers([usersWallet])
-            .rpc();
-    });
-
-    it('Remove connection', async () => {
-        await program.methods
-            .removeConnection(0)
-            .accounts({
-                authority: usersWallet.publicKey,
-                userProfile: usersPda,
-                systemProgram: anchor.web3.SystemProgram.programId,
-                connectionAccount: connectionsPda,
             })
             .signers([usersWallet])
             .rpc();
