@@ -15,6 +15,20 @@ pub struct UserProfile {
 
 #[account]
 #[derive(Default)]
+pub struct RequestCount {
+    pub authority: Pubkey,
+    pub count: u8,
+}
+
+#[account]
+#[derive(Default)]
+pub struct RequestAccount {
+    pub authority: Pubkey,
+    pub sender: Pubkey
+}
+
+#[account]
+#[derive(Default)]
 pub struct UniqueUsername {
     pub authority: Pubkey,
     pub username: String,

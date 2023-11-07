@@ -10,6 +10,12 @@ pub const USERNAME: &[u8] = b"USERNAME";
 pub const CONNECTION: &[u8] = b"CONNECTION";
 
 #[constant]
+pub const REQUEST: &[u8] = b"REQUEST";
+
+#[constant]
+pub const REQUESTCOUNT: &[u8] = b"REQUESTCOUNT";
+
+#[constant]
 pub const TOP: &[u8] = b"TOP";
 
 #[constant]

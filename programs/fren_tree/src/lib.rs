@@ -14,12 +14,16 @@ pub mod fren_tree {
     pub fn initialize_user(ctx: Context<InitializeUser>, twitter: String, role: String) -> Result<()> {
 
         let user_profile = &mut ctx.accounts.user_profile;
+        let request_count = &mut ctx.accounts.request_count;
 
         user_profile.authority = ctx.accounts.authority.key();
         user_profile.twitter = twitter;
         user_profile.role = role;
         user_profile.upgrade = false;
         user_profile.connections = 0;
+
+        request_count.authority = ctx.accounts.authority.key();
+        request_count.count = 0;
 
         Ok(())
     }
@@ -43,11 +47,22 @@ pub mod fren_tree {
 
         let connection_account = &mut ctx.accounts.connection_account;
 
+        let request_count = &mut ctx.accounts.request_count;
+
+        let request_account = &mut ctx.accounts.request_account;
+
         connection_account.authority = receiver;
 
         connection_account.connection = vec![ctx.accounts.authority.key()];
 
         connection_account.accepted = false;
+
+        //need to have a check to see if the user has a request count pda
+        request_count.count = request_count.count.checked_add(1).unwrap();
+
+        request_account.authority = receiver;
+
+        request_account.sender = ctx.accounts.authority.key();
 
         user_profile.connections = user_profile.connections.checked_add(1)
         .unwrap();
@@ -57,15 +72,19 @@ pub mod fren_tree {
         Ok(())
     }
 
-    pub fn accept_request(ctx: Context<AcceptRequest>, receiver: Pubkey) -> Result<()> {
+    pub fn accept_request(ctx: Context<AcceptRequest>, _request_id: u8) -> Result<()> {
         
         let user_profile = &mut ctx.accounts.user_profile;
 
         let connection_account = &mut ctx.accounts.connection_account;
 
         let new_connection_account = &mut ctx.accounts.new_connection_account;
+        
+        let request_count = &mut ctx.accounts.request_count;
 
-        connection_account.authority = receiver;
+        let request_account = &mut ctx.accounts.request_account;
+
+        connection_account.authority = request_account.sender;
 
         connection_account.connection.push(ctx.accounts.authority.key());
 
@@ -74,12 +93,25 @@ pub mod fren_tree {
         //setting up the new account
         new_connection_account.authority = ctx.accounts.authority.key();
 
-        new_connection_account.connection = vec![receiver, ctx.accounts.authority.key()];
+        new_connection_account.connection = vec![request_account.sender, ctx.accounts.authority.key()];
 
         new_connection_account.accepted = true;
        
         user_profile.connections = user_profile.connections.checked_add(1)
         .unwrap();
+
+
+        request_count.count = request_count.count.checked_sub(1).unwrap();
+
+        Ok(())
+    }
+
+    pub fn decline_request(ctx: Context<DeclineRequest>, _request_id: u8) -> Result<()> {
+        
+        let request_count = &mut ctx.accounts.request_count;
+
+
+        request_count.count = request_count.count.checked_sub(1).unwrap();
 
         Ok(())
     }
@@ -251,6 +283,15 @@ pub struct InitializeUser<'info> {
     )]
     pub user_profile: Box<Account<'info, UserProfile>>,
 
+    #[account(
+        init,
+        seeds = [REQUESTCOUNT, authority.key().as_ref()],
+        bump,
+        payer = authority,
+        space = 8 + std::mem::size_of::<RequestCount>(),
+    )]
+    pub request_count: Box<Account<'info, RequestCount>>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -296,6 +337,22 @@ pub struct SendRequest<'info> {
     pub user_profile: Box<Account<'info, UserProfile>>,
 
     #[account(
+        mut,
+        seeds = [REQUESTCOUNT, receiver.as_ref()],
+        bump,
+    )]
+    pub request_count: Box<Account<'info, RequestCount>>,
+
+    #[account(
+        init,
+        seeds = [REQUEST, receiver.as_ref(), &[request_count.count].as_ref()],
+        bump,
+        payer = authority,
+        space = std::mem::size_of::<ConnectionAccount>() + 8,
+    )]
+    pub request_account: Box<Account<'info, RequestAccount>>,
+
+    #[account(
         init,
         seeds = [CONNECTION, authority.key().as_ref()],
         bump,
@@ -308,7 +365,7 @@ pub struct SendRequest<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(receiver: Pubkey)]
+#[instruction(_request_id: u8)]
 pub struct AcceptRequest<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -323,7 +380,23 @@ pub struct AcceptRequest<'info> {
 
     #[account(
         mut,
-        seeds = [CONNECTION, receiver.as_ref()],
+        seeds = [REQUESTCOUNT, authority.key().as_ref()],
+        bump,
+        has_one = authority
+    )]
+    pub request_count: Box<Account<'info, RequestCount>>,
+
+    #[account(
+        mut,
+        close = authority,
+        seeds = [REQUEST, authority.key().as_ref(), &[_request_id].as_ref()],
+        bump,
+    )]
+    pub request_account: Box<Account<'info, RequestAccount>>,
+
+    #[account(
+        mut,
+        seeds = [CONNECTION, request_account.sender.as_ref()],
         bump,
         has_one = authority
     )]
@@ -337,6 +410,39 @@ pub struct AcceptRequest<'info> {
         space = std::mem::size_of::<ConnectionAccount>() + 8,
     )]
     pub new_connection_account: Box<Account<'info, ConnectionAccount>>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(_request_id: u8)]
+pub struct DeclineRequest<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [REQUESTCOUNT, authority.key().as_ref()],
+        bump,
+        has_one = authority
+    )]
+    pub request_count: Box<Account<'info, RequestCount>>,
+
+    #[account(
+        mut,
+        close = authority,
+        seeds = [REQUEST, authority.key().as_ref(), &[_request_id].as_ref()],
+        bump,
+    )]
+    pub request_account: Box<Account<'info, RequestAccount>>,
+
+    #[account(
+        mut,
+        close = authority,
+        seeds = [CONNECTION, request_account.sender.as_ref()],
+        bump,
+    )]
+    pub connection_account: Box<Account<'info, ConnectionAccount>>,
 
     pub system_program: Program<'info, System>,
 }
