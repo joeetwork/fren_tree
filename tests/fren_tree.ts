@@ -11,6 +11,8 @@ describe('fren_tree', () => {
 
     const usersWallet = anchor.web3.Keypair.generate();
 
+    const randomWallet = anchor.web3.Keypair.generate();
+
     const connection = anchor.getProvider().connection;
 
     const airdrop = async () => {
@@ -22,14 +24,45 @@ describe('fren_tree', () => {
         await connection.confirmTransaction(signature);
     };
 
+    const airdrop2 = async () => {
+        const signature = await connection.requestAirdrop(
+            randomWallet.publicKey,
+            anchor.web3.LAMPORTS_PER_SOL
+        );
+
+        await connection.confirmTransaction(signature);
+    };
+
     const [usersPda] = anchor.web3.PublicKey.findProgramAddressSync(
         [new TextEncoder().encode('USER'), usersWallet.publicKey.toBuffer()],
         program.programId
     );
 
+    const [randomUsersPda] = anchor.web3.PublicKey.findProgramAddressSync(
+        [new TextEncoder().encode('USER'), randomWallet.publicKey.toBuffer()],
+        program.programId
+    );
+
+    const [randomRequestCountsPda] =
+        anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('REQUESTCOUNT'),
+                randomWallet.publicKey.toBuffer(),
+            ],
+            program.programId
+        );
+
     const [requestCountsPda] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             new TextEncoder().encode('REQUESTCOUNT'),
+            usersWallet.publicKey.toBuffer(),
+        ],
+        program.programId
+    );
+
+    const [connectionPda] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            new TextEncoder().encode('CONNECTION'),
             usersWallet.publicKey.toBuffer(),
         ],
         program.programId
@@ -188,5 +221,54 @@ describe('fren_tree', () => {
             })
             .signers([usersWallet])
             .rpc();
+    });
+
+    it('Create Random Wallet account!', async () => {
+        await airdrop2();
+
+        await program.methods
+            .initializeUser('', '')
+            .accounts({
+                authority: randomWallet.publicKey,
+                userProfile: randomUsersPda,
+                requestCount: randomRequestCountsPda,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .signers([randomWallet])
+            .rpc();
+    });
+
+    it('Send Request', async () => {
+        const recieverCount = await program.account.requestCount.fetch(
+            randomRequestCountsPda
+        );
+
+        const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('REQUEST'),
+                randomWallet.publicKey.toBuffer(),
+                Buffer.from([recieverCount.count]),
+            ],
+            program.programId
+        );
+
+        await program.methods
+            .sendRequest(randomWallet.publicKey)
+            .accounts({
+                userProfile: usersPda,
+                authority: usersWallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                requestAccount: requestPda,
+                requestCount: randomRequestCountsPda,
+                connectionAccount: connectionPda,
+            })
+            .signers([usersWallet])
+            .rpc();
+
+        const test = await program.account.connectionAccount.fetch(
+            connectionPda
+        );
+
+        console.log(test);
     });
 });
