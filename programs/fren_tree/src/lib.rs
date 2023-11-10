@@ -348,7 +348,7 @@ pub struct SendRequest<'info> {
         seeds = [REQUEST, receiver.as_ref(), &[request_count.count].as_ref()],
         bump,
         payer = authority,
-        space = std::mem::size_of::<ConnectionAccount>() + 8,
+        space = std::mem::size_of::<RequestAccount>() + 8,
     )]
     pub request_account: Box<Account<'info, RequestAccount>>,
 

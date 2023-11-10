@@ -68,6 +68,14 @@ describe('fren_tree', () => {
         program.programId
     );
 
+    const [newConnectionPda] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            new TextEncoder().encode('CONNECTION'),
+            randomWallet.publicKey.toBuffer(),
+        ],
+        program.programId
+    );
+
     it('Is initialized!', async () => {
         await airdrop();
 
@@ -265,10 +273,48 @@ describe('fren_tree', () => {
             .signers([usersWallet])
             .rpc();
 
-        const test = await program.account.connectionAccount.fetch(
-            connectionPda
+        const test = await program.account.requestAccount.fetch(
+            requestPda
         );
 
-        console.log(test);
+        console.log(requestPda);
+    });
+
+    it('Accept Request', async () => {
+
+        const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('REQUEST'),
+                randomWallet.publicKey.toBuffer(),
+                Buffer.from([0]),
+            ],
+            program.programId
+        );
+
+        const test = await program.account.requestAccount.fetch(
+            requestPda
+        );
+
+        console.log(requestPda);
+
+        await program.methods
+            .acceptRequest(1)
+            .accounts({
+                userProfile: randomUsersPda,
+                authority: randomWallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                requestAccount: requestPda,
+                requestCount: randomRequestCountsPda,
+                connectionAccount: connectionPda,
+                newConnectionAccount: newConnectionPda
+            })
+            .signers([randomWallet])
+            .rpc();
+
+        // const test = await program.account.connectionAccount.fetch(
+        //     connectionPda
+        // );
+
+        // console.log(test);
     });
 });
