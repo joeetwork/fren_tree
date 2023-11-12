@@ -110,6 +110,9 @@ pub mod fren_tree {
         
         let request_count = &mut ctx.accounts.request_count;
 
+        let user_profile = &mut ctx.accounts.user_profile;
+
+        user_profile.connections = user_profile.connections.checked_sub(1).unwrap();
 
         request_count.count = request_count.count.checked_sub(1).unwrap();
 
@@ -419,6 +422,13 @@ pub struct AcceptRequest<'info> {
 pub struct DeclineRequest<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [USER, request_account.sender.as_ref()],
+        bump,
+    )]
+    pub user_profile: Box<Account<'info, UserProfile>>,
 
     #[account(
         mut,

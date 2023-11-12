@@ -326,6 +326,7 @@ describe('fren_tree', () => {
         await program.methods
             .declineRequest(0)
             .accounts({
+                userProfile: usersPda,
                 authority: randomWallet.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 requestAccount: requestPda,
