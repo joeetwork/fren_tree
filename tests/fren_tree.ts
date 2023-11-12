@@ -291,14 +291,8 @@ describe('fren_tree', () => {
             program.programId
         );
 
-        const test = await program.account.requestAccount.fetch(
-            requestPda
-        );
-
-        console.log(requestPda);
-
         await program.methods
-            .acceptRequest(1)
+            .acceptRequest(0)
             .accounts({
                 userProfile: randomUsersPda,
                 authority: randomWallet.publicKey,
@@ -311,10 +305,10 @@ describe('fren_tree', () => {
             .signers([randomWallet])
             .rpc();
 
-        // const test = await program.account.connectionAccount.fetch(
-        //     connectionPda
-        // );
+        const test = await program.account.connectionAccount.fetch(
+            newConnectionPda
+        );
 
-        // console.log(test);
+        console.log(test);
     });
 });
