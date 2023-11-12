@@ -280,7 +280,39 @@ describe('fren_tree', () => {
         console.log(requestPda);
     });
 
-    it('Accept Request', async () => {
+    // it('Accept Request', async () => {
+
+    //     const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
+    //         [
+    //             new TextEncoder().encode('REQUEST'),
+    //             randomWallet.publicKey.toBuffer(),
+    //             Buffer.from([0]),
+    //         ],
+    //         program.programId
+    //     );
+
+    //     await program.methods
+    //         .acceptRequest(0)
+    //         .accounts({
+    //             userProfile: randomUsersPda,
+    //             authority: randomWallet.publicKey,
+    //             systemProgram: anchor.web3.SystemProgram.programId,
+    //             requestAccount: requestPda,
+    //             requestCount: randomRequestCountsPda,
+    //             connectionAccount: connectionPda,
+    //             newConnectionAccount: newConnectionPda
+    //         })
+    //         .signers([randomWallet])
+    //         .rpc();
+
+    //     const test = await program.account.connectionAccount.fetch(
+    //         newConnectionPda
+    //     );
+
+    //     console.log(test);
+    // });
+
+    it('Decline Request', async () => {
 
         const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
             [
@@ -292,21 +324,19 @@ describe('fren_tree', () => {
         );
 
         await program.methods
-            .acceptRequest(0)
+            .declineRequest(0)
             .accounts({
-                userProfile: randomUsersPda,
                 authority: randomWallet.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 requestAccount: requestPda,
                 requestCount: randomRequestCountsPda,
                 connectionAccount: connectionPda,
-                newConnectionAccount: newConnectionPda
             })
             .signers([randomWallet])
             .rpc();
 
-        const test = await program.account.connectionAccount.fetch(
-            newConnectionPda
+        const test = await program.account.userProfile.fetch(
+            usersPda
         );
 
         console.log(test);
