@@ -24,7 +24,8 @@ pub struct RequestCount {
 #[derive(Default)]
 pub struct RequestAccount {
     pub authority: Pubkey,
-    pub sender: Pubkey
+    pub sender: Pubkey,
+    pub connection_number: u8
 }
 
 #[account]
@@ -39,7 +40,7 @@ pub struct UniqueUsername {
 pub struct ConnectionAccount {
     pub authority: Pubkey,
     pub connection: Vec<Pubkey>,
-    pub accepted: bool
+    pub connection_number: u8
 }
 
 #[account]

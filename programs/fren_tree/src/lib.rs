@@ -55,14 +55,14 @@ pub mod fren_tree {
 
         connection_account.connection = vec![ctx.accounts.authority.key()];
 
-        connection_account.accepted = false;
-
         //need to have a check to see if the user has a request count pda
         request_count.count = request_count.count.checked_add(1).unwrap();
 
         request_account.authority = receiver;
 
         request_account.sender = ctx.accounts.authority.key();
+
+        request_account.connection_number = user_profile.connections;
 
         user_profile.connections = user_profile.connections.checked_add(1)
         .unwrap();
@@ -86,20 +86,19 @@ pub mod fren_tree {
 
         connection_account.authority = request_account.sender;
 
-        connection_account.connection.push(ctx.accounts.authority.key());
+        connection_account.connection_number = user_profile.connections;
 
-        connection_account.accepted = true;
+        connection_account.connection.push(ctx.accounts.authority.key());
 
         //setting up the new account
         new_connection_account.authority = ctx.accounts.authority.key();
 
-        new_connection_account.connection = vec![request_account.sender, ctx.accounts.authority.key()];
+        new_connection_account.connection = vec![ctx.accounts.authority.key(), request_account.sender];
 
-        new_connection_account.accepted = true;
+        new_connection_account.connection_number = request_account.connection_number;
        
         user_profile.connections = user_profile.connections.checked_add(1)
         .unwrap();
-
 
         request_count.count = request_count.count.checked_sub(1).unwrap();
 
@@ -119,12 +118,18 @@ pub mod fren_tree {
         Ok(())
     }
 
-    // pub fn remove_connection(ctx: Context<RemoveConnection>, connection_id: u8) -> Result<()> {
+    pub fn remove_connection(ctx: Context<RemoveConnection>, _connection_id: u8) -> Result<()> {
 
+        let from = &mut ctx.accounts.from;
+
+        let to = &mut ctx.accounts.to;
+
+        from.connections = from.connections.checked_sub(1).unwrap();
  
+        to.connections = to.connections.checked_sub(1).unwrap();
         
-    //     Ok(())
-    // }
+        Ok(())
+    }
 
     pub fn initialize_top_connections(ctx: Context<InitializeTopConnections>) -> Result<()> {
         let top_connections_account = &mut ctx.accounts.top_connections_account;
@@ -357,7 +362,7 @@ pub struct SendRequest<'info> {
 
     #[account(
         init,
-        seeds = [CONNECTION, authority.key().as_ref()],
+        seeds = [CONNECTION, authority.key().as_ref(), &[user_profile.connections].as_ref()],
         bump,
         payer = authority,
         space = 82+36,
@@ -394,12 +399,13 @@ pub struct AcceptRequest<'info> {
         close = authority,
         seeds = [REQUEST, authority.key().as_ref(), &[_request_id].as_ref()],
         bump,
+        has_one = authority
     )]
     pub request_account: Box<Account<'info, RequestAccount>>,
 
     #[account(
         mut,
-        seeds = [CONNECTION, request_account.sender.as_ref()],
+        seeds = [CONNECTION, request_account.sender.as_ref(), &[request_account.connection_number]],
         bump,
         has_one = authority
     )]
@@ -407,7 +413,7 @@ pub struct AcceptRequest<'info> {
 
     #[account(
         init,
-        seeds = [CONNECTION, authority.key().as_ref()],
+        seeds = [CONNECTION, authority.key().as_ref(), &[user_profile.connections].as_ref()],
         bump,
         payer = authority,
         space =  82+36,
@@ -449,10 +455,49 @@ pub struct DeclineRequest<'info> {
     #[account(
         mut,
         close = authority,
-        seeds = [CONNECTION, request_account.sender.as_ref()],
+        seeds = [CONNECTION, request_account.sender.as_ref(), &[request_account.connection_number]],
         bump,
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(_connection_id: u8)]
+pub struct RemoveConnection<'info> {
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [USER, from_connection_account.connection[0].as_ref()],
+        bump,
+    )]
+    pub from: Box<Account<'info, UserProfile>>,
+
+    #[account(
+        mut,
+        seeds = [USER, from_connection_account.connection[1].as_ref()],
+        bump,
+    )]
+    pub to: Box<Account<'info, UserProfile>>,
+
+    #[account(
+        mut,
+        close = authority,
+        seeds = [CONNECTION, authority.key().as_ref(), &[_connection_id]],
+        bump,
+    )]
+    pub from_connection_account: Box<Account<'info, ConnectionAccount>>,
+
+    #[account(
+        mut,
+        close = authority,
+        seeds = [CONNECTION, from_connection_account.connection[1].as_ref(), &[from_connection_account.connection_number].as_ref()],
+        bump,
+    )]
+    pub to_connection_account: Box<Account<'info, ConnectionAccount>>,
 
     pub system_program: Program<'info, System>,
 }

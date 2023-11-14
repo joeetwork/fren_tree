@@ -64,6 +64,7 @@ describe('fren_tree', () => {
         [
             new TextEncoder().encode('CONNECTION'),
             usersWallet.publicKey.toBuffer(),
+            Buffer.from([0])
         ],
         program.programId
     );
@@ -72,6 +73,7 @@ describe('fren_tree', () => {
         [
             new TextEncoder().encode('CONNECTION'),
             randomWallet.publicKey.toBuffer(),
+            Buffer.from([0])
         ],
         program.programId
     );
@@ -305,11 +307,11 @@ describe('fren_tree', () => {
     //         .signers([randomWallet])
     //         .rpc();
 
-    //     const test = await program.account.connectionAccount.fetch(
-    //         newConnectionPda
-    //     );
-
-    //     console.log(test);
+    //         const test = await program.account.userProfile.fetch(
+    //             usersPda
+    //         );
+    
+    //         console.log(test);
     // });
 
     it('Decline Request', async () => {
@@ -342,4 +344,36 @@ describe('fren_tree', () => {
 
         console.log(test);
     });
+
+
+    // it('Remove Connection', async () => {
+
+    //     const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
+    //         [
+    //             new TextEncoder().encode('REQUEST'),
+    //             randomWallet.publicKey.toBuffer(),
+    //             Buffer.from([0]),
+    //         ],
+    //         program.programId
+    //     );
+
+    //     await program.methods
+    //         .removeConnection(0)
+    //         .accounts({
+    //             from: usersPda,
+    //             to: randomUsersPda,
+    //             fromConnectionAccount: connectionPda,
+    //             toConnectionAccount: newConnectionPda,
+    //             authority: usersWallet.publicKey,
+    //             systemProgram: anchor.web3.SystemProgram.programId,
+    //         })
+    //         .signers([usersWallet])
+    //         .rpc();
+
+    //     const test = await program.account.userProfile.fetch(
+    //         usersPda
+    //     );
+
+    //     console.log(test);
+    // });
 });
