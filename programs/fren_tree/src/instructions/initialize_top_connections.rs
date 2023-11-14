@@ -21,6 +21,7 @@ pub struct InitializeTopConnections<'info> {
 }
 
 pub fn initialize_top_connections(ctx: Context<InitializeTopConnections>) -> Result<()> {
+
     let top_connections_account = &mut ctx.accounts.top_connections_account;
 
     top_connections_account.authority = ctx.accounts.authority.key();

@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::AcceptRequestProps};
 
 #[derive(Accounts)]
-#[instruction(_request_id: u8)]
+#[instruction(request_id: u8)]
 pub struct AcceptRequest<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -27,7 +27,7 @@ pub struct AcceptRequest<'info> {
     #[account(
         mut,
         close = authority,
-        seeds = [REQUEST, authority.key().as_ref(), &[_request_id].as_ref()],
+        seeds = [REQUEST, authority.key().as_ref(), &[request_id].as_ref()],
         bump,
         has_one = authority
     )]
@@ -53,7 +53,9 @@ pub struct AcceptRequest<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn accept_request(ctx: Context<AcceptRequest>, _request_id: u8) -> Result<()> {
+pub fn accept_request(ctx: Context<AcceptRequest>, params: AcceptRequestProps) -> Result<()> {
+
+    let AcceptRequestProps { request_id } = params;
         
     let user_profile = &mut ctx.accounts.user_profile;
 

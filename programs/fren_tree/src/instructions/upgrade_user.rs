@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::UpgradeUserProps};
 
 #[derive(Accounts)]
 #[instruction()]
@@ -24,7 +24,9 @@ pub struct UpgradeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn upgrade_user(ctx: Context<UpgradeUser>, amount: u64) -> Result<()> {
+pub fn upgrade_user(ctx: Context<UpgradeUser>, params: UpgradeUserProps) -> Result<()> {
+
+    let UpgradeUserProps {  amount } = params;
 
     let user_profile = &mut ctx.accounts.user_profile;
 

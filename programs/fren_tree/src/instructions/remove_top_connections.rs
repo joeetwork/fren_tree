@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::RemoveTopConnectionsProps};
 
 #[derive(Accounts)]
 #[instruction()]
@@ -27,19 +27,21 @@ pub struct RemoveTopConnections<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn remove_top_connections(ctx: Context<RemoveTopConnections>, _position: u8, _role: String) -> Result<()> {
+pub fn remove_top_connections(ctx: Context<RemoveTopConnections>, params: RemoveTopConnectionsProps) -> Result<()> {
+
+    let RemoveTopConnectionsProps {   position, role } = params;
 
     let user_profile = &mut ctx.accounts.user_profile;
 
-    if user_profile.connections < _position {
+    if user_profile.connections < position {
         return Ok(())
     }
 
     let top_connections_account = &mut ctx.accounts.top_connections_account;
 
-    let position: usize = _position as usize;
+    let position: usize = position as usize;
 
-    match _role.as_str() {
+    match role.as_str() {
         ARTIST => {
             top_connections_account.artists.remove(position);
         }

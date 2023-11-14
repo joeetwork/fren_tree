@@ -64,7 +64,7 @@ describe('fren_tree', () => {
         [
             new TextEncoder().encode('CONNECTION'),
             usersWallet.publicKey.toBuffer(),
-            Buffer.from([0])
+            Buffer.from([0]),
         ],
         program.programId
     );
@@ -73,7 +73,7 @@ describe('fren_tree', () => {
         [
             new TextEncoder().encode('CONNECTION'),
             randomWallet.publicKey.toBuffer(),
-            Buffer.from([0])
+            Buffer.from([0]),
         ],
         program.programId
     );
@@ -81,8 +81,10 @@ describe('fren_tree', () => {
     it('Is initialized!', async () => {
         await airdrop();
 
+        const params = { twitter: '', role: '' };
+
         await program.methods
-            .initializeUser('', '')
+            .initializeUser(params)
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
@@ -106,7 +108,7 @@ describe('fren_tree', () => {
             );
 
         await program.methods
-            .addUsername('user1')
+            .addUsername({username: 'user1'})
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
@@ -123,7 +125,7 @@ describe('fren_tree', () => {
         const testReciever = new anchor.web3.Keypair();
 
         await program.methods
-            .upgradeUser(data)
+            .upgradeUser({amount: data})
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
@@ -158,7 +160,7 @@ describe('fren_tree', () => {
 
     it('Change Role', async () => {
         await program.methods
-            .changeRole('new role')
+            .changeRole({role: 'new role'})
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
@@ -200,7 +202,7 @@ describe('fren_tree', () => {
             );
 
         await program.methods
-            .addTopConnections(0, 0, 'Degen')
+            .addTopConnections({connection: 0, position: 0, role: 'Degen'})
             .accounts({
                 userProfile: usersPda,
                 authority: usersWallet.publicKey,
@@ -222,7 +224,7 @@ describe('fren_tree', () => {
             );
 
         await program.methods
-            .removeTopConnections(0, 'Degen')
+            .removeTopConnections({position: 0, role: 'Degen'})
             .accounts({
                 userProfile: usersPda,
                 authority: usersWallet.publicKey,
@@ -236,8 +238,10 @@ describe('fren_tree', () => {
     it('Create Random Wallet account!', async () => {
         await airdrop2();
 
+        const params = { twitter: '', role: '' };
+
         await program.methods
-            .initializeUser('', '')
+            .initializeUser(params)
             .accounts({
                 authority: randomWallet.publicKey,
                 userProfile: randomUsersPda,
@@ -263,7 +267,7 @@ describe('fren_tree', () => {
         );
 
         await program.methods
-            .sendRequest(randomWallet.publicKey)
+            .sendRequest({receiver: randomWallet.publicKey})
             .accounts({
                 userProfile: usersPda,
                 authority: usersWallet.publicKey,
@@ -275,9 +279,7 @@ describe('fren_tree', () => {
             .signers([usersWallet])
             .rpc();
 
-        const test = await program.account.requestAccount.fetch(
-            requestPda
-        );
+        const test = await program.account.requestAccount.fetch(requestPda);
 
         console.log(requestPda);
     });
@@ -294,7 +296,7 @@ describe('fren_tree', () => {
     //     );
 
     //     await program.methods
-    //         .acceptRequest(0)
+    //         .acceptRequest({requestId: 0})
     //         .accounts({
     //             userProfile: randomUsersPda,
     //             authority: randomWallet.publicKey,
@@ -310,12 +312,11 @@ describe('fren_tree', () => {
     //         const test = await program.account.userProfile.fetch(
     //             usersPda
     //         );
-    
+
     //         console.log(test);
     // });
 
     it('Decline Request', async () => {
-
         const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 new TextEncoder().encode('REQUEST'),
@@ -326,7 +327,7 @@ describe('fren_tree', () => {
         );
 
         await program.methods
-            .declineRequest(0)
+            .declineRequest({requestId: 0})
             .accounts({
                 userProfile: usersPda,
                 authority: randomWallet.publicKey,
@@ -338,13 +339,10 @@ describe('fren_tree', () => {
             .signers([randomWallet])
             .rpc();
 
-        const test = await program.account.userProfile.fetch(
-            usersPda
-        );
+        const test = await program.account.userProfile.fetch(usersPda);
 
         console.log(test);
     });
-
 
     // it('Remove Connection', async () => {
 
@@ -358,7 +356,7 @@ describe('fren_tree', () => {
     //     );
 
     //     await program.methods
-    //         .removeConnection(0)
+    //         .removeConnection({connectionId: 0})
     //         .accounts({
     //             from: usersPda,
     //             to: randomUsersPda,

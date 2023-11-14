@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::DeclineRequestProps};
 
 #[derive(Accounts)]
-#[instruction(_request_id: u8)]
+#[instruction(request_id: u8)]
 pub struct DeclineRequest<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -26,7 +26,7 @@ pub struct DeclineRequest<'info> {
     #[account(
         mut,
         close = authority,
-        seeds = [REQUEST, authority.key().as_ref(), &[_request_id].as_ref()],
+        seeds = [REQUEST, authority.key().as_ref(), &[request_id].as_ref()],
         bump,
     )]
     pub request_account: Box<Account<'info, RequestAccount>>,
@@ -42,7 +42,7 @@ pub struct DeclineRequest<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn decline_request(ctx: Context<DeclineRequest>, _request_id: u8) -> Result<()> {
+pub fn decline_request(ctx: Context<DeclineRequest>, params: DeclineRequestProps) -> Result<()> {
         
     let request_count = &mut ctx.accounts.request_count;
 

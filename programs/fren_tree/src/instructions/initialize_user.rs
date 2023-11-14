@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::*};
 
 #[derive(Accounts)]
 #[instruction()]
@@ -29,7 +29,9 @@ pub struct InitializeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn initialize_user(ctx: Context<InitializeUser>, twitter: String, role: String) -> Result<()> {
+pub fn initialize_user(ctx: Context<InitializeUser>, params: InitializeUserParams) -> Result<()> {
+    
+    let InitializeUserParams { twitter, role } = params;
 
     let user_profile = &mut ctx.accounts.user_profile;
     let request_count = &mut ctx.accounts.request_count;

@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::SendRequestProps};
 
 #[derive(Accounts)]
 #[instruction(receiver: Pubkey)]
@@ -44,7 +44,9 @@ pub struct SendRequest<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn send_request(ctx: Context<SendRequest>, receiver: Pubkey) -> Result<()> {
+pub fn send_request(ctx: Context<SendRequest>, params: SendRequestProps) -> Result<()> {
+
+    let SendRequestProps {  receiver } = params;
 
     let user_profile = &mut ctx.accounts.user_profile;
 

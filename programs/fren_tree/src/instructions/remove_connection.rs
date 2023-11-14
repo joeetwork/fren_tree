@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::RemoveConnectionProps};
 
 #[derive(Accounts)]
-#[instruction(_connection_id: u8)]
+#[instruction(connection_id: u8)]
 pub struct RemoveConnection<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -25,7 +25,7 @@ pub struct RemoveConnection<'info> {
     #[account(
         mut,
         close = authority,
-        seeds = [CONNECTION, authority.key().as_ref(), &[_connection_id]],
+        seeds = [CONNECTION, authority.key().as_ref(), &[connection_id]],
         bump,
     )]
     pub from_connection_account: Box<Account<'info, ConnectionAccount>>,
@@ -41,7 +41,9 @@ pub struct RemoveConnection<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn remove_connection(ctx: Context<RemoveConnection>, _connection_id: u8) -> Result<()> {
+pub fn remove_connection(ctx: Context<RemoveConnection>, params: RemoveConnectionProps) -> Result<()> {
+
+    let RemoveConnectionProps {  connection_id } = params;
 
     let from = &mut ctx.accounts.from;
 

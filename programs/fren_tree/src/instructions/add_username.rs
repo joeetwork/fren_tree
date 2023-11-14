@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::AddUniqueNameProps};
 
 #[derive(Accounts)]
 #[instruction(username: String)]
@@ -28,7 +28,10 @@ pub struct AddUniqueName<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn add_username(ctx: Context<AddUniqueName>, username: String) -> Result<()> {
+pub fn add_username(ctx: Context<AddUniqueName>, params: AddUniqueNameProps) -> Result<()> {
+
+    let AddUniqueNameProps {  username } = params;
+
     let user_profile = &mut ctx.accounts.user_profile;
     let unique_username = &mut ctx.accounts.unique_username;
 

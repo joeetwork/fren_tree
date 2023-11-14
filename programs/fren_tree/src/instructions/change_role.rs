@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{states::*, constant::*};
+use crate::{states::*, constant::*, utils::CheckRoleProps};
 
 #[derive(Accounts)]
 #[instruction()]
@@ -19,11 +19,13 @@ pub struct CheckRole<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn change_role(ctx: Context<CheckRole>, _role: String) -> Result<()> {
+pub fn change_role(ctx: Context<CheckRole>, params: CheckRoleProps) -> Result<()> {
+
+    let CheckRoleProps {  role } = params;
 
     let user_profile = &mut ctx.accounts.user_profile;
 
-    user_profile.role = _role;
+    user_profile.role = role;
     
     Ok(())
 }
