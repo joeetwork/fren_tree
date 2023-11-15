@@ -27,9 +27,7 @@ pub struct AddTopConnections<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn add_top_connections(ctx: Context<AddTopConnections>, params: AddTopConnectionsProps) -> Result<()> {
-
-    let AddTopConnectionsProps {  connection, position, role } = params;
+pub fn add_top_connections(ctx: Context<AddTopConnections>, AddTopConnectionsProps {  connection, position, role }: AddTopConnectionsProps) -> Result<()> {
 
     let user_profile = &mut ctx.accounts.user_profile;
 

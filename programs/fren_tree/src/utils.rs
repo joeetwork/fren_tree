@@ -28,7 +28,7 @@ pub struct CheckUpgradeProps {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone, Default)]
 pub struct SendRequestProps {
-    pub receiver: Pubkey
+    pub to: Pubkey
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone, Default)]

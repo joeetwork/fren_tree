@@ -10,18 +10,18 @@ pub struct DeclineRequest<'info> {
 
     #[account(
         mut,
-        seeds = [USER, request_account.sender.as_ref()],
+        seeds = [USER, authority.key().as_ref()],
         bump,
+        has_one = authority,
     )]
-    pub user_profile: Box<Account<'info, UserProfile>>,
+    pub to_account: Box<Account<'info, UserProfile>>,
 
     #[account(
         mut,
-        seeds = [REQUESTCOUNT, authority.key().as_ref()],
+        seeds = [USER, request_account.from.as_ref()],
         bump,
-        has_one = authority
     )]
-    pub request_count: Box<Account<'info, RequestCount>>,
+    pub from_account: Box<Account<'info, UserProfile>>,
 
     #[account(
         mut,
@@ -34,7 +34,7 @@ pub struct DeclineRequest<'info> {
     #[account(
         mut,
         close = authority,
-        seeds = [CONNECTION, request_account.sender.as_ref(), &[request_account.connection_number]],
+        seeds = [CONNECTION, request_account.from.as_ref(), &[request_account.connection_number]],
         bump,
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
@@ -44,13 +44,13 @@ pub struct DeclineRequest<'info> {
 
 pub fn decline_request(ctx: Context<DeclineRequest>, params: DeclineRequestProps) -> Result<()> {
         
-    let request_count = &mut ctx.accounts.request_count;
+    let from_account = &mut ctx.accounts.from_account;
 
-    let user_profile = &mut ctx.accounts.user_profile;
+    let to_account = &mut ctx.accounts.to_account;
 
-    user_profile.connections = user_profile.connections.checked_sub(1).unwrap();
+    from_account.connections = from_account.connections.checked_sub(1).unwrap();
 
-    request_count.count = request_count.count.checked_sub(1).unwrap();
+    to_account.requests = to_account.requests.checked_sub(1).unwrap();
 
     Ok(())
 }

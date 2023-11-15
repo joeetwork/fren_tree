@@ -15,16 +15,9 @@ pub struct UserProfile {
 
 #[account]
 #[derive(Default)]
-pub struct RequestCount {
-    pub authority: Pubkey,
-    pub count: u8,
-}
-
-#[account]
-#[derive(Default)]
 pub struct RequestAccount {
     pub authority: Pubkey,
-    pub sender: Pubkey,
+    pub from: Pubkey,
     pub connection_number: u8
 }
 
@@ -39,8 +32,9 @@ pub struct UniqueUsername {
 #[derive(Default)]
 pub struct ConnectionAccount {
     pub authority: Pubkey,
-    pub connection: Vec<Pubkey>,
-    pub connection_number: u8
+    pub connection: Pubkey,
+    pub connection_number: u8,
+    pub accepted: bool
 }
 
 #[account]

@@ -27,9 +27,7 @@ pub struct RemoveTopConnections<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn remove_top_connections(ctx: Context<RemoveTopConnections>, params: RemoveTopConnectionsProps) -> Result<()> {
-
-    let RemoveTopConnectionsProps {   position, role } = params;
+pub fn remove_top_connections(ctx: Context<RemoveTopConnections>, RemoveTopConnectionsProps {   position, role }: RemoveTopConnectionsProps) -> Result<()> {
 
     let user_profile = &mut ctx.accounts.user_profile;
 

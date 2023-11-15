@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::{states::*, constant::*, utils::SendRequestProps};
 
 #[derive(Accounts)]
-#[instruction(receiver: Pubkey)]
+#[instruction(to: Pubkey)]
 pub struct SendRequest<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -14,18 +14,18 @@ pub struct SendRequest<'info> {
         bump,
         has_one = authority,
     )]
-    pub user_profile: Box<Account<'info, UserProfile>>,
+    pub from_account: Box<Account<'info, UserProfile>>,
 
     #[account(
         mut,
-        seeds = [REQUESTCOUNT, receiver.as_ref()],
+        seeds = [USER, to.as_ref()],
         bump,
     )]
-    pub request_count: Box<Account<'info, RequestCount>>,
+    pub to_account: Box<Account<'info, UserProfile>>,
 
     #[account(
         init,
-        seeds = [REQUEST, receiver.as_ref(), &[request_count.count].as_ref()],
+        seeds = [REQUEST, to.as_ref(), &[to_account.requests].as_ref()],
         bump,
         payer = authority,
         space = std::mem::size_of::<RequestAccount>() + 8,
@@ -34,7 +34,7 @@ pub struct SendRequest<'info> {
 
     #[account(
         init,
-        seeds = [CONNECTION, authority.key().as_ref(), &[user_profile.connections].as_ref()],
+        seeds = [CONNECTION, authority.key().as_ref(), &[from_account.connections].as_ref()],
         bump,
         payer = authority,
         space = 82+36,
@@ -44,35 +44,35 @@ pub struct SendRequest<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn send_request(ctx: Context<SendRequest>, params: SendRequestProps) -> Result<()> {
+pub fn send_request(ctx: Context<SendRequest>, SendRequestProps {  to }: SendRequestProps) -> Result<()> {
 
-    let SendRequestProps {  receiver } = params;
+    let from_account = &mut ctx.accounts.from_account;
 
-    let user_profile = &mut ctx.accounts.user_profile;
+    let to_account = &mut ctx.accounts.to_account;
 
     let connection_account = &mut ctx.accounts.connection_account;
 
-    let request_count = &mut ctx.accounts.request_count;
-
     let request_account = &mut ctx.accounts.request_account;
 
-    connection_account.authority = receiver;
+    //send request (create request pda)
+    request_account.authority = to;
 
-    connection_account.connection = vec![ctx.accounts.authority.key()];
+    request_account.from = ctx.accounts.authority.key();
 
-    //need to have a check to see if the user has a request count pda
-    request_count.count = request_count.count.checked_add(1).unwrap();
+    request_account.connection_number = from_account.connections;
 
-    request_account.authority = receiver;
+    //increase the number of requests for receiving account
+    to_account.requests = to_account.requests.checked_add(1).unwrap();
 
-    request_account.sender = ctx.accounts.authority.key();
+    //create connection for from
+    connection_account.authority = ctx.accounts.authority.key();
 
-    request_account.connection_number = user_profile.connections;
+    connection_account.connection = to;
 
-    user_profile.connections = user_profile.connections.checked_add(1)
+    connection_account.accepted = false;
+
+    from_account.connections = from_account.connections.checked_add(1)
     .unwrap();
-
-//need to add a way for the receiver account to find the created request
     
     Ok(())
 }

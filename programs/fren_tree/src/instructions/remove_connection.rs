@@ -10,30 +10,31 @@ pub struct RemoveConnection<'info> {
 
     #[account(
         mut,
-        seeds = [USER, from_connection_account.connection[0].as_ref()],
+        seeds = [USER, from_connection_account.authority.as_ref()],
         bump,
     )]
-    pub from: Box<Account<'info, UserProfile>>,
+    pub from_account: Box<Account<'info, UserProfile>>,
 
     #[account(
         mut,
-        seeds = [USER, from_connection_account.connection[1].as_ref()],
+        seeds = [USER, from_connection_account.connection.as_ref()],
         bump,
     )]
-    pub to: Box<Account<'info, UserProfile>>,
+    pub to_account: Box<Account<'info, UserProfile>>,
 
     #[account(
         mut,
         close = authority,
         seeds = [CONNECTION, authority.key().as_ref(), &[connection_id]],
         bump,
+        has_one = authority
     )]
     pub from_connection_account: Box<Account<'info, ConnectionAccount>>,
 
     #[account(
         mut,
         close = authority,
-        seeds = [CONNECTION, from_connection_account.connection[1].as_ref(), &[from_connection_account.connection_number].as_ref()],
+        seeds = [CONNECTION, from_connection_account.connection.as_ref(), &[from_connection_account.connection_number].as_ref()],
         bump,
     )]
     pub to_connection_account: Box<Account<'info, ConnectionAccount>>,
@@ -43,15 +44,13 @@ pub struct RemoveConnection<'info> {
 
 pub fn remove_connection(ctx: Context<RemoveConnection>, params: RemoveConnectionProps) -> Result<()> {
 
-    let RemoveConnectionProps {  connection_id } = params;
+    let from_account = &mut ctx.accounts.from_account;
 
-    let from = &mut ctx.accounts.from;
+    let to_account = &mut ctx.accounts.to_account;
 
-    let to = &mut ctx.accounts.to;
+    from_account.connections = from_account.connections.checked_sub(1).unwrap();
 
-    from.connections = from.connections.checked_sub(1).unwrap();
-
-    to.connections = to.connections.checked_sub(1).unwrap();
+    to_account.connections = to_account.connections.checked_sub(1).unwrap();
     
     Ok(())
 }

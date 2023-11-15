@@ -28,9 +28,7 @@ pub struct AddUniqueName<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn add_username(ctx: Context<AddUniqueName>, params: AddUniqueNameProps) -> Result<()> {
-
-    let AddUniqueNameProps {  username } = params;
+pub fn add_username(ctx: Context<AddUniqueName>, AddUniqueNameProps {  username }: AddUniqueNameProps) -> Result<()> {
 
     let user_profile = &mut ctx.accounts.user_profile;
     let unique_username = &mut ctx.accounts.unique_username;

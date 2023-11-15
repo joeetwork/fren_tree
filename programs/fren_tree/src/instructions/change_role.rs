@@ -19,9 +19,7 @@ pub struct CheckRole<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn change_role(ctx: Context<CheckRole>, params: CheckRoleProps) -> Result<()> {
-
-    let CheckRoleProps {  role } = params;
+pub fn change_role(ctx: Context<CheckRole>, CheckRoleProps {  role }: CheckRoleProps) -> Result<()> {
 
     let user_profile = &mut ctx.accounts.user_profile;
 
