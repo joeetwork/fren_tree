@@ -37,7 +37,7 @@ pub struct AcceptRequest<'info> {
         seeds = [CONNECTION, authority.key().as_ref(), &[to_account.connections].as_ref()],
         bump,
         payer = authority,
-        space =  82+36,
+        space =  8 + std::mem::size_of::<ConnectionAccount>(),
     )]
     pub new_connection_account: Box<Account<'info, ConnectionAccount>>,
 
