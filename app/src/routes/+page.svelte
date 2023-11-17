@@ -10,27 +10,18 @@
     // if you don't know what this is, check out https://svelte.dev/tutorial/reactive-declarations
     $: account && console.log(`Connected to wallet: ${account}`);
   
-    // ======== PAGE LOAD CHECKS ========
-  
-    const onLoad = async () => {
-      const { solana } = window as any;
+    // life cycle hook for when the component is mounted
+    onMount(() => {
+
+    const { solana } = window as any;
       wallet = solana;
   
       // set up handlers for wallet events
       wallet.on("connect", () => (account = wallet.publicKey.toString()));
-      wallet.on("disconnect", () => (account = ""));
-  
-      // eagerly connect wallet if the user already has connected before, otherwise do nothing
-      const resp = await wallet.connect({ onlyIfTrusted: true });
-    };
-  
-    // life cycle hook for when the component is mounted
-    onMount(() => {
-      // run the onLoad function when the page completes loading
-      window.addEventListener("load", onLoad);
-  
-      // return a cleanup function to remove the event listener to avoid memory leaks when the page unloads
-      return () => window.removeEventListener("load", onLoad);
+      wallet.on("disconnect", () => (account = ""));  
+
+      (async() => {await wallet.connect({ onlyIfTrusted: true })})()
+
     });
   
     // ======== CONNECT WALLET ========
