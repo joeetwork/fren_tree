@@ -7,11 +7,17 @@ skip-lint = false
 [programs.localnet]
 fren_tree = "HU7c5VwLom5ShB66EDWLa8vQPHBAkeTJ9yCtJYbuGS6E"
 
+[programs.devnet]
+fren_tree = "HU7c5VwLom5ShB66EDWLa8vQPHBAkeTJ9yCtJYbuGS6E"
+
+[programs.mainnet]
+fren_tree = "HU7c5VwLom5ShB66EDWLa8vQPHBAkeTJ9yCtJYbuGS6E"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "/Users/joe/.config/solana/id.json"
 
 [scripts]
