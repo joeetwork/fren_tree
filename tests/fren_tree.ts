@@ -107,7 +107,7 @@ describe('fren_tree', () => {
         );
 
         await program.methods
-            .upgradeUser({})
+            .upgradeUser()
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,

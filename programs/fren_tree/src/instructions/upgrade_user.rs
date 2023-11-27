@@ -26,7 +26,7 @@ pub struct UpgradeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn upgrade_user(ctx: Context<UpgradeUser>, UpgradeUserProps {}: UpgradeUserProps) -> Result<()> {
+pub fn upgrade_user(ctx: Context<UpgradeUser>) -> Result<()> {
 
     let user_profile = &mut ctx.accounts.user_profile;
 

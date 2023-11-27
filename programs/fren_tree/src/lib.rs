@@ -47,8 +47,8 @@ pub mod fren_tree {
         instructions::change_role::change_role(ctx, params)
     }
 
-    pub fn upgrade_user(ctx: Context<UpgradeUser>, params: UpgradeUserProps) -> Result<()> {
-        instructions::upgrade_user::upgrade_user(ctx, params)
+    pub fn upgrade_user(ctx: Context<UpgradeUser>) -> Result<()> {
+        instructions::upgrade_user::upgrade_user(ctx)
     }
 
     pub fn check_upgrade(ctx: Context<CheckUpgrade>) -> Result<()> {
