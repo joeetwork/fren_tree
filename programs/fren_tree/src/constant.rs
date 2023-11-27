@@ -26,3 +26,6 @@ pub const ARTIST: &str = "Artist";
 
 #[constant]
 pub const INFLUENCER: &str = "Influencer";
+
+#[constant]
+pub const OWNERS_WALLET: &str = "2TgV6sWTaHt8Tdca1qHVNwTtFEvRDXsKE3yqzoPL3Mvs";

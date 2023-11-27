@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anchor_lang::prelude::*;
 
 use crate::{states::*, constant::*, utils::UpgradeUserProps};
@@ -33,9 +35,12 @@ pub fn upgrade_user(ctx: Context<UpgradeUser>, UpgradeUserProps {  amount }: Upg
     }
 
     let from_account = &ctx.accounts.authority;
-    //set to program owners address
+
     let to_account = &ctx.accounts.to;
 
+    let owners_wallet = &Pubkey::from_str(OWNERS_WALLET).unwrap();
+
+    if to_account.key == owners_wallet {
     let transfer_instruction = anchor_lang::solana_program::system_instruction::transfer(from_account.key, to_account.key, amount);
 
     anchor_lang::solana_program::program::invoke_signed(
@@ -52,7 +57,8 @@ pub fn upgrade_user(ctx: Context<UpgradeUser>, UpgradeUserProps {  amount }: Upg
 
     let current_time = Clock::get()?.unix_timestamp;
 
-    user_profile.upgrade_time = current_time;
+    user_profile.upgrade_time = current_time
+}
     
     Ok(())
 }
