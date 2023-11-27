@@ -17,7 +17,7 @@ fren_tree = "HU7c5VwLom5ShB66EDWLa8vQPHBAkeTJ9yCtJYbuGS6E"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "/Users/joe/.config/solana/id.json"
 
 [scripts]

@@ -90,7 +90,7 @@ describe('fren_tree', () => {
             );
 
         await program.methods
-            .addUsername({username: 'user1'})
+            .addUsername({ username: 'user1' })
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
@@ -102,28 +102,28 @@ describe('fren_tree', () => {
     });
 
     it('Upgrade User', async () => {
-        const data = new anchor.BN(1000000);
-
-        const testReciever = new anchor.web3.Keypair();
+        const ownersWallet = new anchor.web3.PublicKey(
+            '2TgV6sWTaHt8Tdca1qHVNwTtFEvRDXsKE3yqzoPL3Mvs'
+        );
 
         await program.methods
-            .upgradeUser({amount: data})
+            .upgradeUser({})
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
-                to: testReciever.publicKey,
+                to: ownersWallet,
             })
             .signers([usersWallet])
             .rpc();
 
         const newAccountBalance = await program.provider.connection.getBalance(
-            testReciever.publicKey
+            ownersWallet
         );
 
         assert.strictEqual(
             newAccountBalance,
-            data.toNumber(),
+            new anchor.BN(1000000).toNumber(),
             'The new account should have the transferred lamports'
         );
     });
@@ -142,7 +142,7 @@ describe('fren_tree', () => {
 
     it('Change Role', async () => {
         await program.methods
-            .changeRole({role: 'new role'})
+            .changeRole({ role: 'new role' })
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
@@ -184,7 +184,7 @@ describe('fren_tree', () => {
             );
 
         await program.methods
-            .addTopConnections({connection: 0, position: 0, role: 'Degen'})
+            .addTopConnections({ connection: 0, position: 0, role: 'Degen' })
             .accounts({
                 userProfile: usersPda,
                 authority: usersWallet.publicKey,
@@ -206,7 +206,7 @@ describe('fren_tree', () => {
             );
 
         await program.methods
-            .removeTopConnections({position: 0, role: 'Degen'})
+            .removeTopConnections({ position: 0, role: 'Degen' })
             .accounts({
                 userProfile: usersPda,
                 authority: usersWallet.publicKey,
@@ -248,7 +248,7 @@ describe('fren_tree', () => {
         );
 
         await program.methods
-            .sendRequest({to: randomWallet.publicKey})
+            .sendRequest({ to: randomWallet.publicKey })
             .accounts({
                 fromAccount: usersPda,
                 toAccount: randomUsersPda,
@@ -266,7 +266,6 @@ describe('fren_tree', () => {
     });
 
     it('Accept Request', async () => {
-
         const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 new TextEncoder().encode('REQUEST'),
@@ -277,23 +276,21 @@ describe('fren_tree', () => {
         );
 
         await program.methods
-            .acceptRequest({requestId: 0})
+            .acceptRequest({ requestId: 0 })
             .accounts({
                 toAccount: randomUsersPda,
                 authority: randomWallet.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 requestAccount: requestPda,
                 connectionAccount: connectionPda,
-                newConnectionAccount: newConnectionPda
+                newConnectionAccount: newConnectionPda,
             })
             .signers([randomWallet])
             .rpc();
 
-            const test = await program.account.userProfile.fetch(
-                usersPda
-            );
+        const test = await program.account.userProfile.fetch(usersPda);
 
-            console.log(test);
+        console.log(test);
     });
 
     // it('Decline Request', async () => {
@@ -325,7 +322,6 @@ describe('fren_tree', () => {
     // });
 
     it('Remove Connection', async () => {
-
         const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
             [
                 new TextEncoder().encode('REQUEST'),
@@ -336,7 +332,7 @@ describe('fren_tree', () => {
         );
 
         await program.methods
-            .removeConnection({connectionId: 0})
+            .removeConnection({ connectionId: 0 })
             .accounts({
                 fromAccount: usersPda,
                 toAccount: randomUsersPda,
@@ -348,9 +344,7 @@ describe('fren_tree', () => {
             .signers([usersWallet])
             .rpc();
 
-        const test = await program.account.userProfile.fetch(
-            usersPda
-        );
+        const test = await program.account.userProfile.fetch(usersPda);
 
         console.log(test);
     });

@@ -19,7 +19,6 @@ pub struct CheckRoleProps {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone, Default)]
 pub struct UpgradeUserProps {
-    pub amount: u64
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone, Default)]

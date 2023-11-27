@@ -26,7 +26,7 @@ pub struct UpgradeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn upgrade_user(ctx: Context<UpgradeUser>, UpgradeUserProps {  amount }: UpgradeUserProps) -> Result<()> {
+pub fn upgrade_user(ctx: Context<UpgradeUser>, UpgradeUserProps {}: UpgradeUserProps) -> Result<()> {
 
     let user_profile = &mut ctx.accounts.user_profile;
 
@@ -41,7 +41,7 @@ pub fn upgrade_user(ctx: Context<UpgradeUser>, UpgradeUserProps {  amount }: Upg
     let owners_wallet = &Pubkey::from_str(OWNERS_WALLET).unwrap();
 
     if to_account.key == owners_wallet {
-    let transfer_instruction = anchor_lang::solana_program::system_instruction::transfer(from_account.key, to_account.key, amount);
+    let transfer_instruction = anchor_lang::solana_program::system_instruction::transfer(from_account.key, to_account.key, 1000000);
 
     anchor_lang::solana_program::program::invoke_signed(
         &transfer_instruction,
