@@ -33,9 +33,11 @@ pub struct AcceptRequest<'info> {
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
 
     #[account(
-        mut,
+        init,
         seeds = [CONNECTION, authority.key().as_ref(), &[to_account.connections].as_ref()],
-        bump
+        bump,
+        payer = authority,
+        space =  8 + std::mem::size_of::<ConnectionAccount>(),
     )]
     pub new_connection_account: Box<Account<'info, ConnectionAccount>>,
 

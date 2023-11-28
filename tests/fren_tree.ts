@@ -80,7 +80,6 @@ describe('fren_tree', () => {
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
-                connectionAccount: connectionPda,
                 topConnectionsAccount: topConnectionsPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
@@ -226,7 +225,6 @@ describe('fren_tree', () => {
             .accounts({
                 authority: randomWallet.publicKey,
                 userProfile: randomUsersPda,
-                connectionAccount: newConnectionPda,
                 topConnectionsAccount: topConnectionsPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
@@ -266,35 +264,7 @@ describe('fren_tree', () => {
         console.log(test);
     });
 
-    it('Accept Request', async () => {
-        const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
-            [
-                new TextEncoder().encode('REQUEST'),
-                randomWallet.publicKey.toBuffer(),
-                Buffer.from([0]),
-            ],
-            program.programId
-        );
-
-        await program.methods
-            .acceptRequest({ requestId: 0 })
-            .accounts({
-                toAccount: randomUsersPda,
-                authority: randomWallet.publicKey,
-                systemProgram: anchor.web3.SystemProgram.programId,
-                requestAccount: requestPda,
-                connectionAccount: connectionPda,
-                newConnectionAccount: newConnectionPda,
-            })
-            .signers([randomWallet])
-            .rpc();
-
-        const test = await program.account.userProfile.fetch(usersPda);
-
-        console.log(test);
-    });
-
-    // it('Decline Request', async () => {
+    // it('Accept Request', async () => {
     //     const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
     //         [
     //             new TextEncoder().encode('REQUEST'),
@@ -305,14 +275,14 @@ describe('fren_tree', () => {
     //     );
 
     //     await program.methods
-    //         .declineRequest({requestId: 0})
+    //         .acceptRequest({ requestId: 0 })
     //         .accounts({
-    //             fromAccount: usersPda,
     //             toAccount: randomUsersPda,
     //             authority: randomWallet.publicKey,
     //             systemProgram: anchor.web3.SystemProgram.programId,
     //             requestAccount: requestPda,
     //             connectionAccount: connectionPda,
+    //             newConnectionAccount: newConnectionPda,
     //         })
     //         .signers([randomWallet])
     //         .rpc();
@@ -321,6 +291,34 @@ describe('fren_tree', () => {
 
     //     console.log(test);
     // });
+
+    it('Decline Request', async () => {
+        const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('REQUEST'),
+                randomWallet.publicKey.toBuffer(),
+                Buffer.from([0]),
+            ],
+            program.programId
+        );
+
+        await program.methods
+            .declineRequest({requestId: 0})
+            .accounts({
+                fromAccount: usersPda,
+                toAccount: randomUsersPda,
+                authority: randomWallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+                requestAccount: requestPda,
+                connectionAccount: connectionPda,
+            })
+            .signers([randomWallet])
+            .rpc();
+
+        const test = await program.account.userProfile.fetch(usersPda);
+
+        console.log(test);
+    });
 
     it('Remove Connection', async () => {
         const [requestPda] = anchor.web3.PublicKey.findProgramAddressSync(

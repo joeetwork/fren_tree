@@ -65,6 +65,7 @@ pub fn send_request(ctx: Context<SendRequest>, SendRequestProps {  to }: SendReq
     to_account.requests = to_account.requests.checked_add(1).unwrap();
 
     //create connection for from
+    connection_account.authority = ctx.accounts.authority.key();
 
     connection_account.connection = to;
 
