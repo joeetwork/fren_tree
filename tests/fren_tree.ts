@@ -163,27 +163,6 @@ describe('fren_tree', () => {
             .rpc();
     });
 
-    it('Init top connections', async () => {
-        const [topConnectionsPda, bump] =
-            anchor.web3.PublicKey.findProgramAddressSync(
-                [
-                    new TextEncoder().encode('TOP'),
-                    usersWallet.publicKey.toBuffer(),
-                ],
-                program.programId
-            );
-
-        await program.methods
-            .initializeTopConnections()
-            .accounts({
-                authority: usersWallet.publicKey,
-                systemProgram: anchor.web3.SystemProgram.programId,
-                topConnectionsAccount: topConnectionsPda,
-            })
-            .signers([usersWallet])
-            .rpc();
-    });
-
     it('Add top connection', async () => {
         const [topConnectionsPda, bump] =
             anchor.web3.PublicKey.findProgramAddressSync(
