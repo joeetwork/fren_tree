@@ -4,7 +4,6 @@ pub mod add_username;
 pub mod change_role;
 pub mod check_upgrade;
 pub mod decline_request;
-pub mod initialize_top_connections;
 pub mod initialize_user;
 pub mod remove_connection;
 pub mod remove_top_connections;

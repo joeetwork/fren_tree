@@ -26,6 +26,15 @@ pub struct InitializeUser<'info> {
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
 
+    #[account(
+        init,
+        seeds = [TOP, authority.key().as_ref()],
+        bump,
+        payer = authority,
+        space = std::mem::size_of::<TopConnectionsAccount>() + 8,
+    )]
+    pub top_connections_account: Box<Account<'info, TopConnectionsAccount>>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -34,6 +43,8 @@ pub fn initialize_user(ctx: Context<InitializeUser>, InitializeUserParams { twit
     let user_profile = &mut ctx.accounts.user_profile;
 
     let connection_account = &mut ctx.accounts.connection_account;
+
+    let top_connections_account = &mut ctx.accounts.top_connections_account;
 
     user_profile.authority = ctx.accounts.authority.key();
     user_profile.twitter = twitter;
@@ -48,6 +59,18 @@ pub fn initialize_user(ctx: Context<InitializeUser>, InitializeUserParams { twit
     connection_account.accepted = false;
 
     user_profile.connections = 0;
+
+
+    //init top connections
+    top_connections_account.authority = ctx.accounts.authority.key();
+    
+    top_connections_account.artists = Vec::new();
+
+    top_connections_account.devs = Vec::new();
+
+    top_connections_account.degens = Vec::new();
+
+    top_connections_account.influencers = Vec::new();
 
     Ok(())
 }

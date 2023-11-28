@@ -46,11 +46,6 @@ pub struct RemoveConnectionProps {
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone, Default)]
-pub struct InitializeTopConnectionsProps {
-
-}
-
-#[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone, Default)]
 pub struct AddTopConnectionsProps {
     pub connection: i32,
     pub position: u8, 

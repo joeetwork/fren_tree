@@ -15,7 +15,6 @@ use instructions::send_request::*;
 use instructions::accept_request::*;
 use instructions::decline_request::*;
 use instructions::remove_connection::*;
-use instructions::initialize_top_connections::*;
 use instructions::add_top_connections::*;
 use instructions::remove_top_connections::*;
 
@@ -69,10 +68,6 @@ pub mod fren_tree {
 
     pub fn remove_connection(ctx: Context<RemoveConnection>, params: RemoveConnectionProps) -> Result<()> {
         instructions::remove_connection::remove_connection(ctx, params)
-    }
-
-    pub fn initialize_top_connections(ctx: Context<InitializeTopConnections>) -> Result<()> {
-        instructions::initialize_top_connections::initialize_top_connections(ctx)
     }
 
     pub fn add_top_connections(ctx: Context<AddTopConnections>, params: AddTopConnectionsProps) -> Result<()> {

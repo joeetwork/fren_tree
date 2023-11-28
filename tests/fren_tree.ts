@@ -66,12 +66,22 @@ describe('fren_tree', () => {
 
         const params = { twitter: '', role: '' };
 
+        const [topConnectionsPda] =
+        anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('TOP'),
+                usersWallet.publicKey.toBuffer(),
+            ],
+            program.programId
+        );
+
         await program.methods
             .initializeUser(params)
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
                 connectionAccount: connectionPda,
+                topConnectionsAccount: topConnectionsPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([usersWallet])
@@ -223,12 +233,22 @@ describe('fren_tree', () => {
 
         const params = { twitter: '', role: '' };
 
+        const [topConnectionsPda] =
+        anchor.web3.PublicKey.findProgramAddressSync(
+            [
+                new TextEncoder().encode('TOP'),
+                randomWallet.publicKey.toBuffer(),
+            ],
+            program.programId
+        );
+
         await program.methods
             .initializeUser(params)
             .accounts({
                 authority: randomWallet.publicKey,
                 userProfile: randomUsersPda,
                 connectionAccount: newConnectionPda,
+                topConnectionsAccount: topConnectionsPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([randomWallet])
