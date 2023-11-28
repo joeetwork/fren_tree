@@ -33,11 +33,9 @@ pub struct SendRequest<'info> {
     pub request_account: Box<Account<'info, RequestAccount>>,
 
     #[account(
-        init,
+        mut,
         seeds = [CONNECTION, authority.key().as_ref(), &[from_account.connections].as_ref()],
         bump,
-        payer = authority,
-        space = 8 + std::mem::size_of::<ConnectionAccount>(),
     )]
     pub connection_account: Box<Account<'info, ConnectionAccount>>,
 
@@ -65,7 +63,6 @@ pub fn send_request(ctx: Context<SendRequest>, SendRequestProps {  to }: SendReq
     to_account.requests = to_account.requests.checked_add(1).unwrap();
 
     //create connection for from
-    connection_account.authority = ctx.accounts.authority.key();
 
     connection_account.connection = to;
 

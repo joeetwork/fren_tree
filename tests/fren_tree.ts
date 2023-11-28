@@ -71,6 +71,7 @@ describe('fren_tree', () => {
             .accounts({
                 authority: usersWallet.publicKey,
                 userProfile: usersPda,
+                connectionAccount: connectionPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([usersWallet])
@@ -227,6 +228,7 @@ describe('fren_tree', () => {
             .accounts({
                 authority: randomWallet.publicKey,
                 userProfile: randomUsersPda,
+                connectionAccount: newConnectionPda,
                 systemProgram: anchor.web3.SystemProgram.programId,
             })
             .signers([randomWallet])
