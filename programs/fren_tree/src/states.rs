@@ -9,8 +9,10 @@ pub struct UserProfile {
     pub role: String,
     pub upgrade: bool,
     pub upgrade_time: i64,
-    pub connections: u8,
-    pub requests: u8
+    pub last_connections: u8,
+    pub last_requests: u8,
+    pub connection_count: u8,
+    pub request_count: u8
 }
 
 #[account]
@@ -18,7 +20,8 @@ pub struct UserProfile {
 pub struct RequestAccount {
     pub authority: Pubkey,
     pub from: Pubkey,
-    pub connection_number: u8
+    pub connection_number: u8,
+    pub request_number: u8
 }
 
 #[account]

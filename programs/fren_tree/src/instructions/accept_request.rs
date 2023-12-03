@@ -34,7 +34,7 @@ pub struct AcceptRequest<'info> {
 
     #[account(
         init,
-        seeds = [CONNECTION, authority.key().as_ref(), &[to_account.connections].as_ref()],
+        seeds = [CONNECTION, authority.key().as_ref(), &[to_account.last_connections].as_ref()],
         bump,
         payer = authority,
         space =  8 + std::mem::size_of::<ConnectionAccount>(),
@@ -67,11 +67,14 @@ pub fn accept_request(ctx: Context<AcceptRequest>, params: AcceptRequestProps) -
 
     new_connection_account.accepted = true;
    
-    to_account.connections = to_account.connections.checked_add(1)
+    to_account.last_connections = to_account.last_connections.checked_add(1)
+    .unwrap();
+
+    to_account.connection_count = to_account.connection_count.checked_add(1)
     .unwrap();
 
     //remove request
-    to_account.requests = to_account.requests.checked_sub(1).unwrap();
+    to_account.request_count = to_account.request_count.checked_sub(1).unwrap();
 
     Ok(())
 }

@@ -31,7 +31,7 @@ pub fn remove_top_connections(ctx: Context<RemoveTopConnections>, RemoveTopConne
 
     let user_profile = &mut ctx.accounts.user_profile;
 
-    if user_profile.connections < position {
+    if user_profile.last_connections < position {
         return Ok(())
     }
 

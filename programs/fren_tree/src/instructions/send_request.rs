@@ -25,7 +25,7 @@ pub struct SendRequest<'info> {
 
     #[account(
         init,
-        seeds = [REQUEST, to.as_ref(), &[to_account.requests].as_ref()],
+        seeds = [REQUEST, to.as_ref(), &[to_account.last_requests].as_ref()],
         bump,
         payer = authority,
         space = std::mem::size_of::<RequestAccount>() + 8,
@@ -34,7 +34,7 @@ pub struct SendRequest<'info> {
 
     #[account(
         init,
-        seeds = [CONNECTION, authority.key().as_ref(), &[from_account.connections].as_ref()],
+        seeds = [CONNECTION, authority.key().as_ref(), &[from_account.last_connections].as_ref()],
         bump,
         payer = authority,
         space = std::mem::size_of::<ConnectionAccount>() + 8,
@@ -59,10 +59,14 @@ pub fn send_request(ctx: Context<SendRequest>, SendRequestProps {  to }: SendReq
 
     request_account.from = ctx.accounts.authority.key();
 
-    request_account.connection_number = from_account.connections;
+    request_account.connection_number = from_account.last_connections;
+
+    request_account.request_number = to_account.last_requests;
 
     //increase the number of requests for receiving account
-    to_account.requests = to_account.requests.checked_add(1).unwrap();
+    to_account.last_requests = to_account.last_requests.checked_add(1).unwrap();
+
+    to_account.request_count = to_account.request_count.checked_add(1).unwrap();
 
     //create connection for from
     connection_account.authority = ctx.accounts.authority.key();
@@ -71,7 +75,10 @@ pub fn send_request(ctx: Context<SendRequest>, SendRequestProps {  to }: SendReq
 
     connection_account.accepted = false;
 
-    from_account.connections = from_account.connections.checked_add(1)
+    from_account.last_connections = from_account.last_connections.checked_add(1)
+    .unwrap();
+
+    from_account.connection_count = from_account.connection_count.checked_add(1)
     .unwrap();
     
     Ok(())

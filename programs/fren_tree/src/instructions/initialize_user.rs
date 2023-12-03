@@ -39,8 +39,8 @@ pub fn initialize_user(ctx: Context<InitializeUser>, InitializeUserParams { twit
     user_profile.twitter = twitter;
     user_profile.role = role;
     user_profile.upgrade = false;
-    user_profile.connections = 0;
-    user_profile.requests = 0;
+    user_profile.last_connections = 0;
+    user_profile.last_requests = 0;
 
     //init top connections
     top_connections_account.authority = ctx.accounts.authority.key();

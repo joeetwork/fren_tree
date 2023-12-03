@@ -48,9 +48,9 @@ pub fn decline_request(ctx: Context<DeclineRequest>, params: DeclineRequestProps
 
     let to_account = &mut ctx.accounts.to_account;
 
-    from_account.connections = from_account.connections.checked_sub(1).unwrap();
+    from_account.connection_count = from_account.connection_count.checked_sub(1).unwrap();
 
-    to_account.requests = to_account.requests.checked_sub(1).unwrap();
+    to_account.request_count = to_account.request_count.checked_sub(1).unwrap();
 
     Ok(())
 }

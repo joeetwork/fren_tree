@@ -31,7 +31,7 @@ pub fn add_top_connections(ctx: Context<AddTopConnections>, AddTopConnectionsPro
 
     let user_profile = &mut ctx.accounts.user_profile;
 
-    if user_profile.connections < position || user_profile.connections < connection as u8{
+    if user_profile.last_connections < position || user_profile.last_connections < connection as u8{
         return Ok(())
     }
 
